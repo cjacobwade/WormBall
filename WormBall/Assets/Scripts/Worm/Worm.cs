@@ -497,7 +497,7 @@ public class Worm : MonoBehaviour
 				{
 					GameObject ballObj = WadeUtils.Instantiate(ballPrefab, transform.position + transform.up, transform.rotation);
 					ballObj.layer = LayerMask.NameToLayer("IgnorePlayer");
-					ballObj.rigidbody2D.AddForce(transform.up * pukeForce * 10);
+					ballObj.rigidbody2D.AddForce(transform.up * pukeForce * 100);
 					ballObj.rigidbody2D.AddTorque(pukeForce * 0.01f);
 
 					Ball ball = ballObj.GetComponent<Ball>();

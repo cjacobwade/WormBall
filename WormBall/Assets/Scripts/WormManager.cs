@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class WormManager : MonoBehaviour 
 {
 	public static SingletonBehaviour<WormManager> singleton = new SingletonBehaviour<WormManager>();
-	List<GameObject> worms = new List<GameObject>();
+	public List<GameObject> worms = new List<GameObject>();
 
 	[SerializeField] GameObject wormPrefab;
 

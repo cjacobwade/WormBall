@@ -48,15 +48,18 @@ public class GameManager : MonoBehaviour
 
 		if(gameState == GameState.Menu)
 		{
-			if(Input.GetKeyDown(KeyCode.LeftArrow))
+			for(int i = 0; i < 4; i++)
 			{
-				twoPlayer = true;
-				gameState = GameState.Game;
-			}
-			else if(Input.GetKeyDown(KeyCode.RightArrow))
-			{
-				twoPlayer = false;
-				gameState = GameState.Game;
+				if(Input.GetAxis("Horizontal-P" + (i + 1)) < -0.1f)
+				{
+					twoPlayer = true;
+					gameState = GameState.Game;
+				}
+				else if(Input.GetAxis("Horizontal-P" + (i + 1)) > 0.1f)
+				{
+					twoPlayer = false;
+					gameState = GameState.Game;
+				}
 			}
 		}
 	}

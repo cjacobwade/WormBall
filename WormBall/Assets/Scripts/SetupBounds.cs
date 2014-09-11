@@ -7,6 +7,8 @@ public class SetupBounds : MonoBehaviour
 	public Vector3 worldMin;
 	public Vector3 worldMax;
 
+	[SerializeField] GameObject cornerColPrefab;
+
 	void Awake () 
 	{
 		Camera cam = Camera.main;
@@ -14,10 +16,11 @@ public class SetupBounds : MonoBehaviour
 		worldMin = cam.ScreenToWorldPoint(new Vector2(0.0f, 0.0f));
 		worldMax = cam.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height));
 
-//		SetupLeft();
-//		SetupRight();
-//		SetupTop();
-//		SetupBottom();
+		SetupLeft();
+		SetupRight();
+		SetupTop();
+		SetupBottom();
+		SetupCornerColliders();
 		SetupBallContainer();
 	}
 
@@ -65,6 +68,39 @@ public class SetupBounds : MonoBehaviour
 		bottomBox.center = new Vector2(bottomBox.center.x, bottomBox.center.y - 0.5f);
 	}
 
+	void SetupCornerColliders()
+	{
+		Vector3 topLeft = worldMax;
+		topLeft.x *= -1;
+
+		Vector3 bottomRight = worldMin;
+		bottomRight.x *= -1;
+
+		GameObject topLeftCol = WadeUtils.Instantiate(	cornerColPrefab, 
+		                      							topLeft + (Vector3.right - Vector3.up) * 2.0f, 
+		                      							Quaternion.identity);
+		topLeftCol.name = "TopLeftCorner";
+		topLeftCol.transform.parent = transform;
+
+		GameObject topRightCol = WadeUtils.Instantiate(	cornerColPrefab, 
+		                      							worldMax + (-Vector3.right - Vector3.up) * 2.0f, 
+		                      							Quaternion.Euler(0.0f, 0.0f, 270.0f));
+		topRightCol.name = "TopRightCorner";
+		topRightCol.transform.parent = transform;
+
+		GameObject bottomRightCol = WadeUtils.Instantiate(	cornerColPrefab, 
+		                                                  bottomRight + (-Vector3.right + Vector3.up) * 2.0f, 
+		                                                  Quaternion.Euler(0.0f, 0.0f, 180.0f));
+		bottomRightCol.name = "BottomRightCorner";
+		bottomRightCol.transform.parent = transform;
+
+		GameObject bottomLeftCol = WadeUtils.Instantiate(	cornerColPrefab, 
+		                      								worldMin + (Vector3.right + Vector3.up) * 2.0f, 
+		                      								Quaternion.Euler(0.0f, 0.0f, 90.0f));
+		bottomLeftCol.name = "BottomLeftCorner";
+		bottomLeftCol.transform.parent = transform;
+	}
+
 	void SetupBallContainer()
 	{
 		GameObject ballContainer = new GameObject("BallContainer", typeof(BoxCollider2D));
@@ -74,5 +110,18 @@ public class SetupBounds : MonoBehaviour
 		ballBox.isTrigger = true;
 		ballBox.size = new Vector2(worldMax.x * 2.0f, worldMax.y * 2.0f);
 		ballBox.center = Vector3.zero;
+	}
+
+	public bool IsInBounds(Vector3 pos)
+	{
+		if(pos.x > worldMax.x || pos.y > worldMax.y || 
+		   pos.x < worldMin.x || pos.y < worldMin.y)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
 }

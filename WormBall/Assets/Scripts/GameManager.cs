@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public enum GameState
 {
@@ -11,14 +13,22 @@ public enum GameState
 
 public class GameManager : MonoBehaviour 
 {
+	public static SingletonBehaviour<GameManager> singleton = new SingletonBehaviour<GameManager>();
+
 	GameState gameState;
 	GameState prevState;
 
-	bool twoPlayer = true;
+	[HideInInspector] public bool twoPlayer = true;
 
 	[SerializeField] GameObject menuObj;
+
 	[SerializeField] GameObject characterSelectObj;
+	[SerializeField] Color[] colorOptions;
+	Color team1Color;
+	Color team2Color;
+
 	[SerializeField] GameObject gameObj;
+
 	[SerializeField] GameObject endGameObj;
 
 	void Awake () 
@@ -120,6 +130,15 @@ public class GameManager : MonoBehaviour
 
 		gameObj.SetActive(true);
 
+		List<Color> colors = colorOptions.ToList();
+		team1Color = colors[Random.Range(0, colors.Count - 1)];
+		colors.Remove(team1Color);
+		team2Color = colors[Random.Range(0, colors.Count - 1)];
+
+		ScoreManager sm = ScoreManager.singleton.instance;
+		sm.team1TimeText.ToList().ForEach( text => text.color = team1Color);
+		sm.team2TimeText.ToList().ForEach( text => text.color = team2Color);
+
 		if(twoPlayer)
 		{
 			TwoPlayer();
@@ -143,7 +162,6 @@ public class GameManager : MonoBehaviour
 		{
 			Vector3 rand = Random.insideUnitSphere * 0.4f;
 			rand += Vector3.one * 0.6f;
-			Color randColor = new Vector4(rand.x, rand.y, rand.z, 1.0f);
 			
 			Vector3 spawnPos;
 			Quaternion spawnRot;
@@ -161,12 +179,14 @@ public class GameManager : MonoBehaviour
 				spawnPos = transform.position + Vector3.right * 5.0f;
 				spawnPos -= Vector3.up * 3.0f;
 			}
-			
-			GameObject wormObj = WormManager.singleton.instance.CreateWorm(spawnPos, lookUp, i + 1, randColor).gameObject;
+
+			Color spawnColor = i < 1 ? team1Color : team2Color;
+
+			GameObject wormObj = WormManager.singleton.instance.CreateWorm(spawnPos, lookUp, i + 1, spawnColor).gameObject;
 			wormObj.transform.rotation = spawnRot;
 			wormObj.transform.parent.name = "P" + (i + 1);
 			wormObj.name = "Worm";
-			wormObj.GetComponentInChildren<SpriteRenderer>().color = randColor;
+			wormObj.GetComponentInChildren<SpriteRenderer>().color = spawnColor - new Color(0.15f, 0.15f, 0.15f, 0.0f);
 		}
 	}
 
@@ -176,7 +196,6 @@ public class GameManager : MonoBehaviour
 		{
 			Vector3 rand = Random.insideUnitSphere * 0.4f;
 			rand += Vector3.one * 0.6f;
-			Color randColor = new Vector4(rand.x, rand.y, rand.z, 1.0f);
 			
 			Vector3 spawnPos;
 			Quaternion spawnRot;
@@ -194,12 +213,19 @@ public class GameManager : MonoBehaviour
 				spawnPos = transform.position + Vector3.right * 5.0f * (i - 1);
 				spawnPos -= Vector3.up * 3.0f;
 			}
-			
-			GameObject wormObj = WormManager.singleton.instance.CreateWorm(spawnPos, lookUp, i + 1, randColor).gameObject;
+
+			Color spawnColor = i < 2 ? team1Color : team2Color;
+
+			if(i % 2 != 0)
+			{
+				spawnColor += new Color(0.25f, 0.25f, 0.25f, 0.0f);
+			}
+
+			GameObject wormObj = WormManager.singleton.instance.CreateWorm(spawnPos, lookUp, i + 1, spawnColor).gameObject;
 			wormObj.transform.rotation = spawnRot;
 			wormObj.transform.parent.name = "P" + (i + 1);
 			wormObj.name = "Worm";
-			wormObj.GetComponentInChildren<SpriteRenderer>().color = randColor;
+			wormObj.GetComponentInChildren<SpriteRenderer>().color = spawnColor - new Color(0.15f, 0.15f, 0.15f, 0.0f);
 		}
 	}
 

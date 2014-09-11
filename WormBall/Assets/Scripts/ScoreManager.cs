@@ -6,25 +6,51 @@ public class ScoreManager : MonoBehaviour
 {
 	public static SingletonBehaviour<ScoreManager> singleton = new SingletonBehaviour<ScoreManager>();
 
-	[SerializeField] Text[] p1TimeText;
-	[SerializeField] Text[] p2TimeText;
+	public Text[] team1TimeText;
+	public Text[] team2TimeText;
 
-	float p1Time = 0.0f;
-	float p2Time = 0.0f;
+	float team1Time = 0.0f;
+	float team2Time = 0.0f;
 	
 	public void AddTime(int playerNum)
 	{
-		if(playerNum == 1)
+		GameManager gm = GameManager.singleton.instance;
+
+		if(gm.twoPlayer)
 		{
-			p1Time += Time.deltaTime;
-			p1TimeText[0].text = ((int)p1Time).ToString("0");
-			p1TimeText[1].text = Mathf.Clamp(p1Time % 1.0f, 0.0f, 0.9f).ToString(".0");
+			if(playerNum == 1)
+			{
+				AddTeam1Time();
+			}
+			else
+			{
+				AddTeam2Time();
+			}
 		}
 		else
 		{
-			p2Time += Time.deltaTime;
-			p2TimeText[0].text = ((int)p2Time).ToString("0");
-			p2TimeText[1].text = Mathf.Clamp(p2Time % 1.0f, 0.0f, 0.9f).ToString(".0");
+			if(playerNum < 3)
+			{
+				AddTeam1Time();
+			}
+			else
+			{
+				AddTeam2Time();
+			}
 		}
+	}
+
+	void AddTeam1Time()
+	{
+		team1Time += Time.deltaTime;
+		team1TimeText[0].text = ((int)team1Time).ToString("0");
+		team1TimeText[1].text = Mathf.Clamp(team1Time % 1.0f, 0.0f, 0.9f).ToString(".0");
+	}
+
+	void AddTeam2Time()
+	{
+		team2Time += Time.deltaTime;
+		team2TimeText[0].text = ((int)team2Time).ToString("0");
+		team2TimeText[1].text = Mathf.Clamp(team2Time % 1.0f, 0.0f, 0.9f).ToString(".0");
 	}
 }

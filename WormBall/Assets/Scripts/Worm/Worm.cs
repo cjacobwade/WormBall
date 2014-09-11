@@ -45,8 +45,11 @@ public class Worm : MonoBehaviour
 	[SerializeField] float throbColorAmount = 1.2f;
 	float carryTimer = 0.0f;
 
+	bool isPuking = false;
+	float pukeTimer = 0.0f;
 	[SerializeField] float pukeTime = 1.4f;
 	[SerializeField] float pukeForce = 50.0f;
+	[SerializeField] float scaleTime = 0.7f;
 
 	Transform mouth;
 	[SerializeField] Sprite openSprite;
@@ -142,6 +145,14 @@ public class Worm : MonoBehaviour
 		Transform lastSeg = segments[segments.Length - 1];
 		Destroy(lastSeg.GetComponent<Tail>());
 
+		foreach(CircleCollider2D col in lastSeg.GetComponents<CircleCollider2D>())
+		{
+			if(col.isTrigger)
+			{
+				Destroy(col);
+			}
+		}
+
 		Transform[] newSegments = new Transform[segments.Length + 1];
 		for(int i = 0; i < segments.Length; i++)
 		{
@@ -149,8 +160,9 @@ public class Worm : MonoBehaviour
 		}
 
 		GameObject segment = CreateSegment(lastSeg.position - lastSeg.up * circleDist);
-
+		segment.name = "Segment" + segments.Length;
 		segment.transform.localScale = Vector3.one * lastSeg.localScale.x;
+
 		segment.GetComponent<SpringJoint2D>().connectedBody = lastSeg.rigidbody2D;
 
 		Tail tail = segment.AddComponent<Tail>();
@@ -430,59 +442,6 @@ public class Worm : MonoBehaviour
 		ChangeSegmentSize(5, carryScale.x);	
 	}
 
-	void CheckOutOfBounds()
-	{
-		SetupBounds sb = SetupBounds.singleton.instance;
-		Vector3 spawnPos = Vector3.zero;
-		bool screenWrap = false;
-		
-		if(transform.position.x > sb.worldMax.x)
-		{
-			spawnPos = transform.position;
-			spawnPos.x = -sb.worldMax.x;
-			screenWrap = true;
-		}
-		
-		if(transform.position.y > sb.worldMax.y)
-		{
-			spawnPos = transform.position;
-			spawnPos.y = -sb.worldMax.y;
-			screenWrap = true;
-		}
-		
-		if(transform.position.x < sb.worldMin.x)
-		{
-			spawnPos = transform.position;
-			spawnPos.x = sb.worldMax.x;
-			screenWrap = true;
-		}
-		
-		if(transform.position.y < sb.worldMin.y)
-		{
-			spawnPos = transform.position;
-			spawnPos.y = sb.worldMax.y;
-			screenWrap = true;
-		}
-//		
-//		if(screenWrap && checkErase)
-//		{
-//			GameObject newBallObj = WadeUtils.Instantiate(gameObject, spawnPos, transform.rotation);
-//			newBallObj.rigidbody2D.velocity = rigidbody2D.velocity;
-//			newBallObj.rigidbody2D.angularVelocity = rigidbody2D.angularVelocity;
-//			
-//			Ball newBall = newBallObj.GetComponent<Ball>();
-//			
-//			if(!canCatch)
-//			{
-//				newBall.StartCoroutine(newBall.ScaleUp(scaleTime - scaleTimer));
-//			}
-//			
-//			spawnBall = false;
-//			Destroy(collider);
-//			Destroy(gameObject, .5f);
-//		}
-	}
-
 	public void Puke()
 	{
 		carrying = false;
@@ -505,11 +464,18 @@ public class Worm : MonoBehaviour
 
 	IEnumerator PukeEffects()
 	{
-		float pukeTimer = 0.0f;
+		isPuking = true;
+		pukeTimer = 0.0f;
 		bool ballSpawned = false;
 
 		GameObject pukeEffectObj = WadeUtils.Instantiate(pukeEffectPrefab, transform.position, transform.rotation);
 		mouth.GetComponent<SpriteRenderer>().sprite = openSprite;
+
+		rigidbody2D.velocity = Vector3.zero;
+		for(int i = 0; i < segments.Length; i++)
+		{
+			segments[i].rigidbody2D.velocity = Vector3.zero;
+		}
 
 		while(pukeTimer < pukeTime)
 		{
@@ -525,17 +491,27 @@ public class Worm : MonoBehaviour
 				mouth.localScale = new Vector3(1.0f + Mathf.Cos(pukeTimer * 20.0f)/2.0f, mouth.localScale.y, mouth.localScale.z);
 			}
 
-			if(!ballSpawned && pukeTimer > pukeTimer/3.0f)
+			if(pukeTimer > pukeTimer/3.0f)
 			{
-				GameObject ballObj = WadeUtils.Instantiate(ballPrefab, transform.position + segments[0].up * 2.0f, transform.rotation);
-				ballObj.rigidbody2D.AddForce(transform.up * pukeForce * 10);
-				ballObj.rigidbody2D.AddTorque(pukeForce * 0.1f);
+				if(!ballSpawned)
+				{
+					GameObject ballObj = WadeUtils.Instantiate(ballPrefab, transform.position + transform.up, transform.rotation);
+					ballObj.layer = LayerMask.NameToLayer("IgnorePlayer");
+					ballObj.rigidbody2D.AddForce(transform.up * pukeForce * 10);
+					ballObj.rigidbody2D.AddTorque(pukeForce * 0.01f);
 
-				Ball ball = ballObj.GetComponent<Ball>();
-				ball.StartCoroutine(ball.ScaleUp(0.0f));
-
-				rigidbody2D.AddForce(-transform.up * pukeForce * 10);
-				ballSpawned = true;
+					Ball ball = ballObj.GetComponent<Ball>();
+					ball.StartCoroutine(ball.ScaleUp(0.0f));
+					ballSpawned = true;
+				}
+				else
+				{
+					rigidbody2D.AddForce(-transform.up * pukeForce * (1.0f - pukeTimer/pukeTime));
+					for(int i = 0; i < segments.Length; i++)
+					{
+						segments[i].rigidbody2D.AddForce(-transform.up * pukeForce * (1.0f - pukeTimer/pukeTime));
+					}
+				}
 			}
 
 			if(pukeTimer > pukeTime * 0.5f)
@@ -554,6 +530,7 @@ public class Worm : MonoBehaviour
 			yield return 0;
 		}
 
+		pukeTimer = 0.0f;
 		mouth.GetComponent<SpriteRenderer>().sprite = closedSprite;
 
 		while(Vector3.Distance(mouth.localScale, Vector3.one) > 0.05f)
@@ -564,7 +541,8 @@ public class Worm : MonoBehaviour
 
 		Destroy(pukeEffectObj);
 		mouth.localScale = Vector3.one;
-
+	
+		isPuking = false;
 	}
 
 	void SetMaterialRelative()
@@ -589,22 +567,25 @@ public class Worm : MonoBehaviour
 			Application.LoadLevel(Application.loadedLevel);
 		}
 
-		inputVec = new Vector3(Input.GetAxis("Horizontal-P" + playerNum), Input.GetAxis("Vertical-P" + playerNum), 0.0f);
-
-		if(Input.GetKeyDown(KeyCode.Equals))
+		if(Input.GetKeyDown(KeyCode.C))
 		{
-			if(segmentNum < maxSegments)
-			{
-				AddSegment();
-			}
+			Catch();
+		}
+		if(Input.GetKeyDown(KeyCode.P))
+		{
+			Puke ();
 		}
 
-		if(Input.GetKeyDown(KeyCode.Minus))
+		inputVec = new Vector3(Input.GetAxis("Horizontal-P" + playerNum), Input.GetAxis("Vertical-P" + playerNum), 0.0f);
+
+		if(segmentNum < maxSegments && Input.GetKeyDown(KeyCode.Equals))
 		{
-			if(segmentNum > minSegments)
-			{
-				RemoveSegment();
-			}
+			AddSegment();
+		}
+
+		if(segmentNum > minSegments && Input.GetKeyDown(KeyCode.Minus))
+		{
+			RemoveSegment();
 		}
 
 		if(wiggleTimer > wiggleTime)
@@ -660,14 +641,17 @@ public class Worm : MonoBehaviour
 
 		if(moveTimer > 0.0f)
 		{
-			rigidbody2D.velocity = transform.up * appliedSpeed;
+			if(pukeTimer <= 0.0f)
+			{
+				rigidbody2D.velocity = transform.up * appliedSpeed;
+			}
 
 			for(int i = 0; i < segments.Length; i++)
 			{
 				segments[i].rigidbody2D.velocity *= swingDamp;
 			}
 		}
-		else 
+		else if(!isPuking)
 		{
 			rigidbody2D.velocity = Vector2.Lerp(rigidbody2D.velocity, Vector2.zero, Time.deltaTime);
 

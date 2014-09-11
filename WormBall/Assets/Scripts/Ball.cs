@@ -15,7 +15,6 @@ public class Ball : MonoBehaviour
 	Vector3 lastVel;
 
 	public bool spawnBall = true;
-	bool inBounds = false;
 
 	void Awake()
 	{
@@ -24,68 +23,83 @@ public class Ball : MonoBehaviour
 
 	void Update()
 	{ 
-//		if(!inBounds)
-//		{
-//			Reset();
-//			inBounds = true;
-//		}
+		if(IsOutOfBounds())
+		{
 
-		CheckOutOfBounds();
+		}
+
 		lastVel = rigidbody2D.velocity;
 	}
 
-	void CheckOutOfBounds()
+	bool IsOutOfBounds()
 	{
 		SetupBounds sb = SetupBounds.singleton.instance;
-		Vector3 spawnPos = Vector3.zero;
-		bool screenWrap = false;
 
-		if(transform.position.x > sb.worldMax.x)
+		if(transform.position.x > sb.worldMax.x || 
+		   transform.position.y > sb.worldMax.y || 
+		   transform.position.x < sb.worldMin.x || 
+		   transform.position.y < sb.worldMin.y)
 		{
-			spawnPos = transform.position;
-			spawnPos.x = -sb.worldMax.x;
-			screenWrap = true;
+			return true;
 		}
-
-		if(transform.position.y > sb.worldMax.y)
+		else
 		{
-			spawnPos = transform.position;
-			spawnPos.y = -sb.worldMax.y;
-			screenWrap = true;
-		}
-
-		if(transform.position.x < sb.worldMin.x)
-		{
-			spawnPos = transform.position;
-			spawnPos.x = sb.worldMax.x;
-			screenWrap = true;
-		}
-
-		if(transform.position.y < sb.worldMin.y)
-		{
-			spawnPos = transform.position;
-			spawnPos.y = sb.worldMax.y;
-			screenWrap = true;
-		}
-
-		if(screenWrap && spawnBall)
-		{
-			GameObject newBallObj = WadeUtils.Instantiate(gameObject, spawnPos, transform.rotation);
-			newBallObj.rigidbody2D.velocity = rigidbody2D.velocity;
-			newBallObj.rigidbody2D.angularVelocity = rigidbody2D.angularVelocity;
-
-			Ball newBall = newBallObj.GetComponent<Ball>();
-
-			if(!canCatch)
-			{
-				newBall.StartCoroutine(newBall.ScaleUp(scaleTime - scaleTimer));
-			}
-
-			spawnBall = false;
-			Destroy(collider);
-			Destroy(gameObject, .5f);
+			return false;
 		}
 	}
+
+//	void CheckOutOfBounds()
+//	{
+//		SetupBounds sb = SetupBounds.singleton.instance;
+//		Vector3 spawnPos = Vector3.zero;
+//		bool screenWrap = false;
+//
+//		if(transform.position.x > sb.worldMax.x)
+//		{
+//			spawnPos = transform.position;
+//			spawnPos.x = -sb.worldMax.x;
+//			screenWrap = true;
+//		}
+//
+//		if(transform.position.y > sb.worldMax.y)
+//		{
+//			spawnPos = transform.position;
+//			spawnPos.y = -sb.worldMax.y;
+//			screenWrap = true;
+//		}
+//
+//		if(transform.position.x < sb.worldMin.x)
+//		{
+//			spawnPos = transform.position;
+//			spawnPos.x = sb.worldMax.x;
+//			screenWrap = true;
+//		}
+//
+//		if(transform.position.y < sb.worldMin.y)
+//		{
+//			spawnPos = transform.position;
+//			spawnPos.y = sb.worldMax.y;
+//			screenWrap = true;
+//		}
+//
+//		if(screenWrap && spawnBall)
+//		{
+//			GameObject newBallObj = WadeUtils.Instantiate(gameObject, spawnPos, transform.rotation);
+//			newBallObj.rigidbody2D.velocity = rigidbody2D.velocity;
+//			newBallObj.rigidbody2D.angularVelocity = rigidbody2D.angularVelocity;
+//
+//			Ball newBall = newBallObj.GetComponent<Ball>();
+//
+//			if(!canCatch)
+//			{
+//				newBall.StartCoroutine(newBall.ScaleUp(scaleTime - scaleTimer));
+//			}
+//
+//			spawnBall = false;
+//			Destroy(collider);
+//			Destroy(gameObject, .5f);
+//		}
+//	}
 
 	public IEnumerator ScaleUp(float currentTimer = 0.0f)
 	{
@@ -93,8 +107,13 @@ public class Ball : MonoBehaviour
 		transform.localScale = Vector3.one * 0.1f;
 		scaleTimer = currentTimer;
 
-		while(transform.localScale.x < scale - 0.01f)
+		while(scaleTimer < scaleTime)
 		{
+			if(scaleTimer > scaleTime/3.0f)
+			{
+				gameObject.layer = LayerMask.NameToLayer("Ball");
+			}
+
 			transform.localScale = Vector3.Lerp(transform.localScale, Vector3.one * scale, scaleTimer/scaleTime);
 			scaleTimer += Time.deltaTime;
 			yield return 0;
@@ -128,22 +147,6 @@ public class Ball : MonoBehaviour
 		rigidbody2D.velocity = Vector3.Reflect(velocity, col.contacts[0].normal) * (1 - speedLoss);
 	}
 
-//	void OnTriggerEnter2D(Collider2D col)
-//	{
-//		if(CheckForBounds(col.transform.parent))
-//		{
-//			inBounds = true;
-//		}
-//	}
-//
-//	void OnTriggerExit2D(Collider2D col)
-//	{
-//		if(!IsInBounds(col.transform.parent))
-//		{
-//			Reset();
-//		}
-//	}
-
 //	void Reset()
 //	{
 //		lastVel = Vector3.zero;
@@ -157,16 +160,4 @@ public class Ball : MonoBehaviour
 //		rigidbody2D.velocity = Vector3.zero;
 //		rigidbody2D.angularVelocity = 0.0f;
 //	}
-
-	bool IsInBounds(Transform t)
-	{
-		if(t)
-		{
-			return !t.GetComponent<SetupBounds>();
-		}
-		else 
-		{
-			return true;
-		}
-	}
 }

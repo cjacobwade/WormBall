@@ -19,11 +19,7 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 		gameTime = totalGameTime;
 	}
 
-	public void ResetScore()
-	{
-		team1Time = 0.0f;
-		team2Time = 0.0f;
-	}
+
 
 	void Update()
 	{
@@ -43,6 +39,19 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 		{
 			ResetTimer();
 		}
+	}
+
+	public void ResetScore()
+	{
+		team1Time = 0.0f;
+
+		team1TimeText[0].text = ((int)team1Time).ToString("0");
+		team1TimeText[1].text = Mathf.Clamp(team1Time % 1.0f, 0.0f, 0.9f).ToString(".0");
+
+		team2Time = 0.0f;
+
+		team2TimeText[0].text = ((int)team2Time).ToString("0");
+		team2TimeText[1].text = Mathf.Clamp(team2Time % 1.0f, 0.0f, 0.9f).ToString(".0");
 	}
 
 	public void ResetTimer()

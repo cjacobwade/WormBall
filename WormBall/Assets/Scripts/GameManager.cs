@@ -101,10 +101,13 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	public void ResetBall()
 	{
-		Ball ball = GameObject.FindObjectOfType<Ball>();
-		if(ball)
+		Ball[] balls = GameObject.FindObjectsOfType<Ball>();
+		foreach(Ball ball in balls)
 		{
-			Destroy(ball);
+			if(ball)
+			{
+				Destroy(ball.gameObject);
+			}
 		}
 
 		WadeUtils.Instantiate(ballPrefab);
@@ -181,7 +184,6 @@ public class GameManager : SingletonBehaviour<GameManager>
 	{
 		Debug.Log("Spawn");
 
-
 		gameObj.SetActive(true);
 
 		List<Color> colors = colorOptions.ToList();
@@ -194,6 +196,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 		sm.team2TimeText.ToList().ForEach( text => text.color = team2Color);
 
 		sm.ResetScore();
+		sm.ResetTimer();
 
 		if(twoPlayer)
 		{

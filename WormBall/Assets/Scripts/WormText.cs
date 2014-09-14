@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class WormText : MonoBehaviour 
 {
 	string lastText = "";
-	[SerializeField] string text = "";
+	public string text = "";
 	[SerializeField] int fontSize = 100;
 
 	[SerializeField] GameObject letterPrefab;

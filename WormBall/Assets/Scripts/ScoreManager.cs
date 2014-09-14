@@ -2,40 +2,80 @@
 using System.Collections;
 using UnityEngine.UI;
 
-public class ScoreManager : MonoBehaviour 
+public class ScoreManager : SingletonBehaviour<ScoreManager>
 {
-	public static SingletonBehaviour<ScoreManager> singleton = new SingletonBehaviour<ScoreManager>();
-
 	public Text[] team1TimeText;
 	public Text[] team2TimeText;
 
 	float team1Time = 0.0f;
 	float team2Time = 0.0f;
 	
-	public void AddTime(int playerNum)
-	{
-		GameManager gm = GameManager.singleton.instance;
+	[SerializeField] float totalGameTime = 30.0f;
+	float gameTime = 0.0f;
+	[SerializeField] DrawCircle drawCircle;
 
-		if(gm.twoPlayer)
+	void Awake()
+	{
+		gameTime = totalGameTime;
+	}
+
+	public void ResetScore()
+	{
+		team1Time = 0.0f;
+		team2Time = 0.0f;
+	}
+
+	void Update()
+	{
+		if(GameManager.instance.gameState == GameState.Game)
 		{
-			if(playerNum == 1)
+			if(gameTime <= 0.0f)
 			{
-				AddTeam1Time();
+				GameManager.instance.EndGame(team1Time > team2Time ? 1 : 2);
 			}
 			else
 			{
-				AddTeam2Time();
+				gameTime -= Time.deltaTime;
+				drawCircle.fillAmount = gameTime/totalGameTime;
 			}
 		}
 		else
 		{
-			if(playerNum < 3)
+			ResetTimer();
+		}
+	}
+
+	public void ResetTimer()
+	{
+		gameTime = totalGameTime;
+		drawCircle.fillAmount = gameTime/totalGameTime;
+	}
+
+	public void AddTime(int playerNum)
+	{
+		if(GameManager.instance.gameState == GameState.Game)
+		{
+			if(GameManager.instance.twoPlayer)
 			{
-				AddTeam1Time();
+				if(playerNum == 1)
+				{
+					AddTeam1Time();
+				}
+				else
+				{
+					AddTeam2Time();
+				}
 			}
 			else
 			{
-				AddTeam2Time();
+				if(playerNum < 3)
+				{
+					AddTeam1Time();
+				}
+				else
+				{
+					AddTeam2Time();
+				}
 			}
 		}
 	}

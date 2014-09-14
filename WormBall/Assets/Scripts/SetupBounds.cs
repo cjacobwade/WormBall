@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class SetupBounds : MonoBehaviour 
+public class SetupBounds : SingletonBehaviour<SetupBounds>
 {
-	public static SingletonBehaviour<SetupBounds> singleton = new SingletonBehaviour<SetupBounds>();
 	public Vector3 worldMin;
 	public Vector3 worldMax;
 

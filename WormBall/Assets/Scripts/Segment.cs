@@ -8,7 +8,7 @@ public class Segment : MonoBehaviour
 
 	void Awake () 
 	{
-		sb = SetupBounds.singleton.instance;
+		sb = SetupBounds.instance;
 		cols = GetComponents<Collider2D>();
 	}
 

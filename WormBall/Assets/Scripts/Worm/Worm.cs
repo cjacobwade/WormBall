@@ -618,7 +618,7 @@ public class Worm : MonoBehaviour
 
 		if(carrying)
 		{
-			ScoreManager.singleton.instance.AddTime(playerNum);
+			ScoreManager.instance.AddTime(playerNum);
 		}
 	}
 

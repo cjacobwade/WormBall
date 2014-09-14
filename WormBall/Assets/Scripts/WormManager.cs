@@ -2,9 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class WormManager : MonoBehaviour 
+public class WormManager : SingletonBehaviour<WormManager> 
 {
-	public static SingletonBehaviour<WormManager> singleton = new SingletonBehaviour<WormManager>();
 	public List<GameObject> worms = new List<GameObject>();
 
 	[SerializeField] GameObject wormPrefab;
@@ -31,6 +30,38 @@ public class WormManager : MonoBehaviour
 			if(wormObjs[i])
 			{
 				Destroy(wormObjs[i]);
+			}
+		}
+	}
+
+	public void DestroyTeam(int teamNum)
+	{
+		GameObject[] wormObjs = worms.ToArray();
+
+		for(int i = 0; i < wormObjs.Length; i++)
+		{
+			if(wormObjs[i])
+			{
+				int wormNum = wormObjs[i].GetComponentInChildren<Worm>().playerNum;
+
+				if(GameManager.instance.twoPlayer)
+				{
+					if(teamNum == wormNum)
+					{
+						Destroy(wormObjs[i]);
+					}
+				}
+				else
+				{
+					if(teamNum == 1 && wormNum < 3)
+					{
+						Destroy(wormObjs[i]);
+					}
+					else if(teamNum == 2 && wormNum > 2)
+					{
+						Destroy(wormObjs[i]);
+					}
+				}
 			}
 		}
 	}

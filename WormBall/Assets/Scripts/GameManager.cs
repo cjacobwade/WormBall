@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UI;
 
 public enum GameState
 {
@@ -11,25 +12,25 @@ public enum GameState
 	EndGame				= 3
 }
 
-public class GameManager : MonoBehaviour 
+public class GameManager : SingletonBehaviour<GameManager> 
 {
-	public static SingletonBehaviour<GameManager> singleton = new SingletonBehaviour<GameManager>();
-
-	GameState gameState;
+	public GameState gameState;
 	GameState prevState;
 
 	[HideInInspector] public bool twoPlayer = true;
+	public GameObject ballPrefab;
 
 	[SerializeField] GameObject menuObj;
-
 	[SerializeField] GameObject characterSelectObj;
+	[SerializeField] GameObject gameObj;
+	[SerializeField] GameObject endGameObj;
+	[SerializeField] WormText wormText;
+
 	[SerializeField] Color[] colorOptions;
 	Color team1Color;
 	Color team2Color;
 
-	[SerializeField] GameObject gameObj;
-
-	[SerializeField] GameObject endGameObj;
+	float modeTime = 0.0f;
 
 	void Awake () 
 	{
@@ -45,9 +46,18 @@ public class GameManager : MonoBehaviour
 		{
 			UpdateState();
 		}
+		else
+		{
+			modeTime += Time.deltaTime;
+		}
 
 		if(gameState == GameState.Menu)
 		{
+			if(modeTime < 1.5f)
+			{
+				return;
+			}
+
 			for(int i = 0; i < 4; i++)
 			{
 				if(Input.GetAxis("Horizontal-P" + (i + 1)) < -0.1f)
@@ -62,10 +72,48 @@ public class GameManager : MonoBehaviour
 				}
 			}
 		}
+		else
+		{
+			if(modeTime < 1.5f)
+			{
+				return;
+			}
+
+			if(Input.GetKeyDown(KeyCode.Escape))
+			{
+				gameState = GameState.Menu;
+			}
+		}
+
+		if(gameState == GameState.EndGame)
+		{
+			if(modeTime < 1.5f)
+			{
+				return;
+			}
+
+			if(Input.anyKeyDown)
+			{
+				gameState = GameState.Menu;
+			}
+		}
+	}
+
+	public void ResetBall()
+	{
+		Ball ball = GameObject.FindObjectOfType<Ball>();
+		if(ball)
+		{
+			Destroy(ball);
+		}
+
+		WadeUtils.Instantiate(ballPrefab);
 	}
 
 	void UpdateState()
 	{
+		modeTime = 0.0f;
+
 		// Cleanup old state
 		switch(prevState)
 		{
@@ -107,6 +155,8 @@ public class GameManager : MonoBehaviour
 	{
 		menuObj.SetActive(true);
 		// Fade in menu music
+
+		ResetBall();
 	}
 
 	void MenuCleanup()
@@ -131,6 +181,7 @@ public class GameManager : MonoBehaviour
 	{
 		Debug.Log("Spawn");
 
+
 		gameObj.SetActive(true);
 
 		List<Color> colors = colorOptions.ToList();
@@ -138,9 +189,11 @@ public class GameManager : MonoBehaviour
 		colors.Remove(team1Color);
 		team2Color = colors[Random.Range(0, colors.Count - 1)];
 
-		ScoreManager sm = ScoreManager.singleton.instance;
+		ScoreManager sm = ScoreManager.instance;
 		sm.team1TimeText.ToList().ForEach( text => text.color = team1Color);
 		sm.team2TimeText.ToList().ForEach( text => text.color = team2Color);
+
+		sm.ResetScore();
 
 		if(twoPlayer)
 		{
@@ -185,7 +238,7 @@ public class GameManager : MonoBehaviour
 
 			Color spawnColor = i < 1 ? team1Color : team2Color;
 
-			GameObject wormObj = WormManager.singleton.instance.CreateWorm(spawnPos, lookUp, i + 1, spawnColor).gameObject;
+			GameObject wormObj = WormManager.instance.CreateWorm(spawnPos, lookUp, i + 1, spawnColor).gameObject;
 			wormObj.transform.rotation = spawnRot;
 			wormObj.transform.parent.name = "P" + (i + 1);
 			wormObj.name = "Worm";
@@ -224,7 +277,7 @@ public class GameManager : MonoBehaviour
 				spawnColor += new Color(0.25f, 0.25f, 0.25f, 0.0f);
 			}
 
-			GameObject wormObj = WormManager.singleton.instance.CreateWorm(spawnPos, lookUp, i + 1, spawnColor).gameObject;
+			GameObject wormObj = WormManager.instance.CreateWorm(spawnPos, lookUp, i + 1, spawnColor).gameObject;
 			wormObj.transform.rotation = spawnRot;
 			wormObj.transform.parent.name = "P" + (i + 1);
 			wormObj.name = "Worm";
@@ -239,14 +292,30 @@ public class GameManager : MonoBehaviour
 			gameObj.SetActive(false);
 			// Disable score manager
 			// Remove players
+			WormManager.instance.DestroyAllWorms();
 		}
 
 		// Fade out game music
 	}
 
+	public void EndGame(int winNum)
+	{
+		if(winNum == 1)
+		{
+			WormManager.instance.DestroyTeam(2);
+		}
+		else
+		{
+			WormManager.instance.DestroyTeam(1);
+		}
+
+		wormText.text = "Team " + winNum + " Wins";
+		GameManager.instance.gameState = GameState.EndGame;
+	}
+
 	void EndGameSetup()
 	{
-		WormManager.singleton.instance.EnableWormInput(false);
+		WormManager.instance.EnableWormInput(false);
 
 		// End game choreo
 			// Wiggling victory text: WINNERS w/ player names
@@ -259,8 +328,9 @@ public class GameManager : MonoBehaviour
 
 	void EndGameCleanup()
 	{
+		gameObj.SetActive(false);
 		endGameObj.SetActive(false);
-		WormManager.singleton.instance.DestroyAllWorms();
+		WormManager.instance.DestroyAllWorms();
 
 		// Fade out end music
 	}

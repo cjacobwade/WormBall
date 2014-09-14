@@ -33,7 +33,7 @@ public class Ball : MonoBehaviour
 
 	bool IsOutOfBounds()
 	{
-		SetupBounds sb = SetupBounds.singleton.instance;
+		SetupBounds sb = SetupBounds.instance;
 
 		if(transform.position.x > sb.worldMax.x || 
 		   transform.position.y > sb.worldMax.y || 

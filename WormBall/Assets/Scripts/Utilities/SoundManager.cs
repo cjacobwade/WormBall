@@ -2,10 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class SoundManager : MonoBehaviour
+public class SoundManager : SingletonBehaviour<SoundManager>
 {
-    public static SingletonBehaviour<SoundManager> singleton = new SingletonBehaviour<SoundManager>();
-
     // Sets many sfx or songs could potentially be playing at once
     [SerializeField]
     int soundPoolSize = 3;
@@ -38,11 +36,6 @@ public class SoundManager : MonoBehaviour
     // Use this for initialization
     void Awake()
     {
-		if(!destroyOnLoad)
-		{
-        	singleton.DontDestroyElseKill(this);
-		}
-
         // Setup dictionaries
         foreach (AudioClip clip in sounds)
             soundList.Add(clip.name, clip);
@@ -70,6 +63,7 @@ public class SoundManager : MonoBehaviour
             sounders[i] = new GameObject("Sounder" + i);
             sounders[i].AddComponent<AudioSource>();
             sounders[i].GetComponent<AudioSource>().playOnAwake = false;
+			sounders[i].AddComponent<AudioUtils>();
             sounders[i].transform.parent = sounderHolder.transform;
         }
     }
@@ -89,6 +83,7 @@ public class SoundManager : MonoBehaviour
             songers[i] = new GameObject("Songer" + i);
             songers[i].AddComponent<AudioSource>();
             songers[i].GetComponent<AudioSource>().playOnAwake = false;
+			songers[i].AddComponent<AudioUtils>();
             songers[i].transform.parent = songerHolder.transform;
         }
     }
@@ -184,7 +179,7 @@ public class SoundManager : MonoBehaviour
             sounders[currentSounder].name = clip + "Sounder";
 
             sounders[currentSounder] = new GameObject("Sounder" + currentSounder);
-            sounders[currentSounder].AddComponent("AudioSource");
+            sounders[currentSounder].AddComponent<AudioSource>();
             sounders[currentSounder].GetComponent<AudioSource>().playOnAwake = false;
             sounders[currentSounder].transform.parent = sounderHolder.transform;
         }
@@ -217,7 +212,7 @@ public class SoundManager : MonoBehaviour
             songers[currentSonger].name = clip + "Songer";
 
             songers[currentSonger] = new GameObject("Songer" + currentSonger);
-            songers[currentSonger].AddComponent("AudioSource");
+            songers[currentSonger].AddComponent<AudioSource>();
             songers[currentSonger].GetComponent<AudioSource>().playOnAwake = false;
             songers[currentSonger].transform.parent = songerHolder.transform;
         }

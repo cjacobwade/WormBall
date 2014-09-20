@@ -425,6 +425,8 @@ public class Worm : MonoBehaviour
 		carrying = true;
 		carryTimer = 0.0f;
 
+		SoundManager.instance.PlaySoundAtPosition("Crunch", transform.position, 1.0f);
+
 		moveSpeed = carryMoveSpeed;
 		rotSpeed = carryRotSpeed;
 
@@ -468,7 +470,10 @@ public class Worm : MonoBehaviour
 		pukeTimer = 0.0f;
 		bool ballSpawned = false;
 
+		SoundManager.instance.PlaySoundAtPosition("Puke", transform.position, 1.0f);
 		GameObject pukeEffectObj = WadeUtils.Instantiate(pukeEffectPrefab, transform.position, transform.rotation);
+		pukeEffectObj.GetComponent<AutoDestroy>().SelfDestroy(pukeTime);
+
 		mouth.GetComponent<SpriteRenderer>().sprite = openSprite;
 
 		rigidbody2D.velocity = Vector3.zero;
@@ -497,10 +502,10 @@ public class Worm : MonoBehaviour
 				{
 					GameObject ballObj = WadeUtils.Instantiate(ballPrefab, transform.position + transform.up, transform.rotation);
 					ballObj.layer = LayerMask.NameToLayer("IgnorePlayer");
-					ballObj.rigidbody2D.AddForce(transform.up * pukeForce * 100);
-					ballObj.rigidbody2D.AddTorque(pukeForce * 0.01f);
+					ballObj.GetComponentInChildren<Rigidbody2D>().AddForce(transform.up * pukeForce * 100);
+					ballObj.GetComponentInChildren<Rigidbody2D>().AddTorque(pukeForce * 0.01f);
 
-					Ball ball = ballObj.GetComponent<Ball>();
+					Ball ball = ballObj.GetComponentInChildren<Ball>();
 					ball.StartCoroutine(ball.ScaleUp(0.0f));
 					ballSpawned = true;
 				}
@@ -539,7 +544,6 @@ public class Worm : MonoBehaviour
 			yield return 0;
 		}
 
-		Destroy(pukeEffectObj);
 		mouth.localScale = Vector3.one;
 	
 		isPuking = false;
@@ -810,6 +814,7 @@ public class Worm : MonoBehaviour
 			{
 				if(tail.worm.carrying)
 				{
+					SoundManager.instance.PlaySoundAtPosition("Pop", transform.position, 1.0f);
 					tail.worm.Puke();
 				}
 			}

@@ -28,6 +28,12 @@ public class WormText : MonoBehaviour
 		lastText = text;
 	}
 
+	public void SetColor(Color newColor)
+	{
+		leftColor = newColor;
+		rightColor = newColor;
+	}
+
 	void Update () 
 	{
 		if(text != lastText)

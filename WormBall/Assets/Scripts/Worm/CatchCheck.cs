@@ -17,7 +17,7 @@ public class CatchCheck : MonoBehaviour
 		if(ball && ball.canCatch)
 		{
 			worm.Catch();
-			Destroy(col.gameObject);
+			Destroy(col.gameObject.transform.parent.gameObject);
 		}
 	}
 }

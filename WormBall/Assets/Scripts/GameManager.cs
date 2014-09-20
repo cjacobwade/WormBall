@@ -24,11 +24,18 @@ public class GameManager : SingletonBehaviour<GameManager>
 	[SerializeField] GameObject characterSelectObj;
 	[SerializeField] GameObject gameObj;
 	[SerializeField] GameObject endGameObj;
-	[SerializeField] WormText wormText;
+
+	[SerializeField] WormText[] p1MenuText;
+	[SerializeField] WormText[] p2MenuText;
+	
+	[SerializeField] WormText winnerText;
 
 	[SerializeField] Color[] colorOptions;
 	Color team1Color;
 	Color team2Color;
+
+	AudioSource music;
+	bool musicStarted = false;
 
 	float modeTime = 0.0f;
 
@@ -58,19 +65,25 @@ public class GameManager : SingletonBehaviour<GameManager>
 				return;
 			}
 
-			for(int i = 0; i < 4; i++)
+			if(Input.anyKeyDown)
 			{
-				if(Input.GetAxis("Horizontal-P" + (i + 1)) < -0.1f)
-				{
-					twoPlayer = true;
-					gameState = GameState.Game;
-				}
-				else if(Input.GetAxis("Horizontal-P" + (i + 1)) > 0.1f)
-				{
-					twoPlayer = false;
-					gameState = GameState.Game;
-				}
+				twoPlayer = true;
+				gameState = GameState.Game;
 			}
+
+//			for(int i = 0; i < 4; i++)
+//			{
+//				if(Input.GetAxis("Horizontal-P" + (i + 1)) < -0.1f)
+//				{
+//					twoPlayer = true;
+//					gameState = GameState.Game;
+//				}
+//				else if(Input.GetAxis("Horizontal-P" + (i + 1)) > 0.1f)
+//				{
+//					twoPlayer = false;
+//					gameState = GameState.Game;
+//				}
+//			}
 		}
 		else
 		{
@@ -82,6 +95,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 			if(Input.GetKeyDown(KeyCode.Escape))
 			{
 				gameState = GameState.Menu;
+				Destroy(music.gameObject);
 			}
 		}
 
@@ -94,7 +108,8 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 			if(Input.anyKeyDown)
 			{
-				gameState = GameState.Menu;
+				Application.Quit();
+				//gameState = GameState.Menu;
 			}
 		}
 	}
@@ -106,7 +121,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 		{
 			if(ball)
 			{
-				Destroy(ball.gameObject);
+				Destroy(ball.gameObject.transform.parent.gameObject);
 			}
 		}
 
@@ -156,8 +171,16 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	void MenuSetup()
 	{
+		List<Color> colors = colorOptions.ToList();
+		team1Color = colors[Random.Range(0, colors.Count - 1)];
+		colors.Remove(team1Color);
+		team2Color = colors[Random.Range(0, colors.Count - 1)];
+
 		menuObj.SetActive(true);
 		// Fade in menu music
+	
+		p1MenuText.ToList().ForEach( menuText => menuText.SetColor(team1Color));
+		p2MenuText.ToList().ForEach( menuText => menuText.SetColor(team2Color));
 
 		ResetBall();
 	}
@@ -182,14 +205,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	void GameSetup()
 	{
-		Debug.Log("Spawn");
-
 		gameObj.SetActive(true);
-
-		List<Color> colors = colorOptions.ToList();
-		team1Color = colors[Random.Range(0, colors.Count - 1)];
-		colors.Remove(team1Color);
-		team2Color = colors[Random.Range(0, colors.Count - 1)];
 
 		ScoreManager sm = ScoreManager.instance;
 		sm.team1TimeText.ToList().ForEach( text => text.color = team1Color);
@@ -206,6 +222,9 @@ public class GameManager : SingletonBehaviour<GameManager>
 		{
 			FourPlayer();
 		}
+
+		music = SoundManager.instance.Play2DSong("WormGameLoop", 0.0f, true);
+		music.GetComponent<AudioUtils>().FadeVolume(0.0f, 0.7f, 2.5f);
 
 		// Enable score manager
 
@@ -306,13 +325,15 @@ public class GameManager : SingletonBehaviour<GameManager>
 		if(winNum == 1)
 		{
 			WormManager.instance.DestroyTeam(2);
+			winnerText.SetColor(team1Color);
 		}
 		else
 		{
 			WormManager.instance.DestroyTeam(1);
+			winnerText.SetColor(team2Color);
 		}
 
-		wormText.text = "Team " + winNum + " Wins";
+		winnerText.text = "Team " + winNum + " Wins";
 		GameManager.instance.gameState = GameState.EndGame;
 	}
 
@@ -334,7 +355,6 @@ public class GameManager : SingletonBehaviour<GameManager>
 		gameObj.SetActive(false);
 		endGameObj.SetActive(false);
 		WormManager.instance.DestroyAllWorms();
-
 		// Fade out end music
 	}
 }

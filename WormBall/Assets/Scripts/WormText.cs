@@ -28,6 +28,14 @@ public class WormText : MonoBehaviour
 		lastText = text;
 	}
 
+	public void SetColor(Color a, Color b)
+	{
+		leftColor = a;
+		rightColor = b;
+
+		UpdateLetters();
+	}
+
 	void Update () 
 	{
 		if(text != lastText)
@@ -35,6 +43,11 @@ public class WormText : MonoBehaviour
 			CreateText();
 		}
 
+		UpdateLetters();
+	}
+
+	void UpdateLetters()
+	{
 		for(int i = 0; i < letterObjs.Length; i++)
 		{
 			if(letterObjs[i])
@@ -43,11 +56,11 @@ public class WormText : MonoBehaviour
 				currentPos.y = rectTransform.position.y + Mathf.Sin(((Time.frameCount + i * 10)/10.0f) * wiggleSpeed) * wiggleHeight;
 				currentPos.x = rectTransform.position.x + i * kerning - (letterObjs.Length - 1)/2.0f * kerning;
 				letterObjs[i].transform.position = currentPos;
-
+				
 				Text letterText = letterObjs[i].GetComponent<Text>();
 				letterText.fontSize = fontSize;
 				letterText.color = Color.Lerp(leftColor, rightColor, i/(float)letterObjs.Length);
-
+				
 			}
 		}
 	}

@@ -24,7 +24,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 	[SerializeField] GameObject characterSelectObj;
 	[SerializeField] GameObject gameObj;
 	[SerializeField] GameObject endGameObj;
-	[SerializeField] WormText wormText;
+	[SerializeField] WormText endWinnerText;
 
 	[SerializeField] Color[] colorOptions;
 	Color team1Color;
@@ -157,6 +157,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 	void MenuSetup()
 	{
 		menuObj.SetActive(true);
+		ScoreManager.instance.drawCircle.enabled = true;
 		// Fade in menu music
 
 		ResetBall();
@@ -303,6 +304,9 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	public void EndGame(int winNum)
 	{
+		Color winnerColor = (winNum == 1) ? team1Color : team2Color;
+		endWinnerText.SetColor(winnerColor, winnerColor);
+
 		if(winNum == 1)
 		{
 			WormManager.instance.DestroyTeam(2);
@@ -312,8 +316,10 @@ public class GameManager : SingletonBehaviour<GameManager>
 			WormManager.instance.DestroyTeam(1);
 		}
 
-		wormText.text = "Team " + winNum + " Wins";
+		endWinnerText.text = "Team " + winNum + " Wins";
+
 		GameManager.instance.gameState = GameState.EndGame;
+		ScoreManager.instance.drawCircle.enabled = false;
 	}
 
 	void EndGameSetup()

@@ -12,7 +12,7 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 	
 	[SerializeField] float totalGameTime = 30.0f;
 	float gameTime = 0.0f;
-	[SerializeField] DrawCircle drawCircle;
+	public DrawCircle drawCircle;
 
 	void Awake()
 	{

@@ -7,7 +7,7 @@ public class WormText : MonoBehaviour
 	public string text = "";
 	string prevText = "";
 
-	[SerializeField] int fontSize = 150;
+	public int fontSize = 150;
 	int prevFontSize = 0;
 
 	[SerializeField] GameObject letterPrefab;

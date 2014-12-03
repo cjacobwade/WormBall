@@ -4,28 +4,30 @@ using UnityEngine.UI;
 
 public class WormText : MonoBehaviour 
 {
-	string lastText = "";
 	public string text = "";
-	[SerializeField] int fontSize = 100;
+	string prevText = "";
+
+	[SerializeField] int fontSize = 150;
+	int prevFontSize = 0;
 
 	[SerializeField] GameObject letterPrefab;
 	GameObject[] letterObjs = new GameObject[0];
 
 	RectTransform rectTransform;
 
-	[SerializeField] float kerning = 1.0f;
-	[SerializeField] float wiggleSpeed = 1.0f;
-	[SerializeField] float wiggleHeight = 1.0f;
+	[SerializeField] float kerning = 3.2f;
+	[SerializeField] float wiggleSpeed = 0.7f;
+	[SerializeField] float wiggleHeight = 0.9f;
 
 	[SerializeField] Color leftColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+	Color prevLeftColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+
 	[SerializeField] Color rightColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+	Color prevRightColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 
 	void Awake () 
 	{
 		rectTransform = GetComponent<RectTransform>();
-
-		CreateText();
-		lastText = text;
 	}
 
 	public void SetColor(Color a, Color b)
@@ -38,11 +40,7 @@ public class WormText : MonoBehaviour
 
 	void Update () 
 	{
-		if(text != lastText)
-		{
-			CreateText();
-		}
-
+		UpdateText();
 		UpdateLetters();
 	}
 
@@ -56,44 +54,55 @@ public class WormText : MonoBehaviour
 				currentPos.y = rectTransform.position.y + Mathf.Sin(((Time.frameCount + i * 10)/10.0f) * wiggleSpeed) * wiggleHeight;
 				currentPos.x = rectTransform.position.x + i * kerning - (letterObjs.Length - 1)/2.0f * kerning;
 				letterObjs[i].transform.position = currentPos;
-				
-				Text letterText = letterObjs[i].GetComponent<Text>();
-				letterText.fontSize = fontSize;
-				letterText.color = Color.Lerp(leftColor, rightColor, i/(float)letterObjs.Length);
-				
+
+				if(prevFontSize != fontSize || 
+				   prevLeftColor != leftColor ||
+				   prevRightColor != prevRightColor)
+				{
+					Text letterText = letterObjs[i].GetComponent<Text>();
+					letterText.fontSize = fontSize;
+					letterText.color = Color.Lerp(leftColor, rightColor, i/(float)letterObjs.Length);
+
+					if(i == letterObjs.Length)
+					{
+						prevFontSize = fontSize;
+						prevLeftColor = leftColor;
+						prevRightColor = rightColor;
+					}
+				}
 			}
 		}
 	}
 
-	void CreateText()
+	void UpdateText()
 	{
-		for(int i = 0; i < letterObjs.Length; i++)
+		if(text != prevText)
 		{
-			if(letterObjs[i]) 
+			for(int i = 0; i < letterObjs.Length; i++)
 			{
-				Destroy(letterObjs[i]);
+				if(letterObjs[i]) 
+				{
+					Destroy(letterObjs[i]);
+				}
 			}
-		}
 
-		letterObjs = new GameObject[text.Length];
+			letterObjs = new GameObject[text.Length];
 
-		for(int i = 0; i < text.Length; i++)
-		{
-			if(text[i] != ' ')
+			for(int i = 0; i < text.Length; i++)
 			{
-				GameObject letterObj = WadeUtils.Instantiate(letterPrefab);
-				Text letterText = letterObj.GetComponent<Text>();
-				letterText.rectTransform.parent = transform;
-				letterText.rectTransform.localScale = Vector3.one;
-				letterText.text = text[i].ToString();
+				if(text[i] != ' ')
+				{
+					GameObject letterObj = WadeUtils.Instantiate(letterPrefab);
+					Text letterText = letterObj.GetComponent<Text>();
+					letterText.rectTransform.parent = transform;
+					letterText.rectTransform.localScale = Vector3.one;
+					letterText.text = text[i].ToString();
 
-				letterObjs[i] = letterObj;
+					letterObjs[i] = letterObj;
+				}
 			}
-		}
-	}
 
-	void LateUpdate()
-	{
-		lastText = text;
+			prevText = text;
+		}
 	}
 }

@@ -67,7 +67,7 @@ public class Worm : MonoBehaviour
 	int[] triangles;
 
 	int uvIndex = 0;
-	float currentUVY = 0.0f;
+	Vector2 currentUVY = Vector2.zero;
 
 	// Use this for initialization
 	void Awake () 
@@ -206,43 +206,43 @@ public class Worm : MonoBehaviour
 		float scale = transform.localScale.x;
 
 		uvIndex = -1;
-		currentUVY = 0.0f;
+		currentUVY = Vector2.zero;
 
 		// Draw mesh head
 		vertices[0] = transform.InverseTransformPoint (transform.position + segments[0].up * 0.5f * scale);
 
-		vertices[1] = transform.InverseTransformPoint (transform.position + (segments[0].up * 0.924f - segments[0].right * 0.383f) * 0.5f * scale);
-		vertices[2] = transform.InverseTransformPoint (transform.position + (segments[0].up * 0.924f + segments[0].right * 0.383f) * 0.5f * scale); 
+		vertices[1] = transform.InverseTransformPoint (transform.position + (segments[0].up * 0.924f + segments[0].right * 0.383f) * 0.5f * scale);
+		vertices[2] = transform.InverseTransformPoint (transform.position + (segments[0].up * 0.924f - segments[0].right * 0.383f) * 0.5f * scale); 
 
-		vertices[3] = transform.InverseTransformPoint (transform.position + (segments[0].up - segments[0].right) * 0.707f * 0.5f * scale);
-		vertices[4] = transform.InverseTransformPoint (transform.position + (segments[0].up + segments[0].right) * 0.707f * 0.5f * scale);
+		vertices[3] = transform.InverseTransformPoint (transform.position + (segments[0].up + segments[0].right) * 0.707f * 0.5f * scale);
+		vertices[4] = transform.InverseTransformPoint (transform.position + (segments[0].up - segments[0].right) * 0.707f * 0.5f * scale);
 
-		vertices[5] = transform.InverseTransformPoint (transform.position - segments[0].right * 0.5f * scale);
-		vertices[6] = transform.InverseTransformPoint (transform.position + segments[0].right * 0.5f * scale);
+		vertices[5] = transform.InverseTransformPoint (transform.position + segments[0].right * 0.5f * scale);
+		vertices[6] = transform.InverseTransformPoint (transform.position - segments[0].right * 0.5f * scale);
 
 		triangleList.Add(0);
-		triangleList.Add(1);
 		triangleList.Add(2);
+		triangleList.Add(1);
 
 		SetupTriangleUV(0, 1, 2);
 
-		triangleList.Add(2);
+		triangleList.Add(3);
 		triangleList.Add(1);
-		triangleList.Add(3);
-
 		triangleList.Add(2);
+
+		triangleList.Add(3);
+		triangleList.Add(2);
+		triangleList.Add(4);
+
+		triangleList.Add(5);
 		triangleList.Add(3);
 		triangleList.Add(4);
 
-		triangleList.Add(4);
-		triangleList.Add(3);
-		triangleList.Add(5);
-
-		triangleList.Add(4);
-		triangleList.Add(5);
 		triangleList.Add(6);
+		triangleList.Add(5);
+		triangleList.Add(4);
 
-		SetupSquareUV(3, 4, 5, 6);
+		SetupSquareUV(1, 2, 3, 4, 5, 6);
 
 		for(int i = 0; i < segments.Length; i++)
 		{
@@ -276,13 +276,13 @@ public class Worm : MonoBehaviour
 
 			if(i == 0)
 			{
-				triangleList.Add(6);
-				triangleList.Add(5);
 				triangleList.Add(7);
+				triangleList.Add(5);
+				triangleList.Add(6);
 
 				triangleList.Add(8);
 				triangleList.Add(7);
-				triangleList.Add(5);
+				triangleList.Add(6);
 			}
 			else
 			{
@@ -305,7 +305,8 @@ public class Worm : MonoBehaviour
 
 			if(i < segments.Length - 1)
 			{
-				SetupSquareUV(i * 4 + 7, i * 4 + 8, i * 4 + 9, i * 4 + 10);
+				SetupSquareUV(i * 4 + 5, i * 4 + 6, i * 4 + 7, i * 4 + 8, i * 4 + 9, i * 4 + 10);
+			//	Debug.Break();
 			}
 			else
 			{
@@ -319,13 +320,13 @@ public class Worm : MonoBehaviour
 
 				vertices[i * 4 + 15] = transform.InverseTransformPoint (seg.position - seg.up * scale/2.0f);
 
-				triangleList.Add(i * 4 + 12);
+				triangleList.Add(i * 4 + 11);
 				triangleList.Add(i * 4 + 9);
 				triangleList.Add(i * 4 + 10);
 
+				triangleList.Add(i * 4 + 10);
 				triangleList.Add(i * 4 + 12);
 				triangleList.Add(i * 4 + 11);
-				triangleList.Add(i * 4 + 9);
 
 				triangleList.Add(i * 4 + 13);
 				triangleList.Add(i * 4 + 11);
@@ -339,47 +340,69 @@ public class Worm : MonoBehaviour
 				triangleList.Add(i * 4 + 13);
 				triangleList.Add(i * 4 + 14);
 
-				SetupSquareUV(i * 4 + 8, i * 4 + 7, i * 4 + 9, i * 4 + 10);
-				SetupSquareUV(i * 4 + 11, i * 4 + 12, i * 4 + 13, i * 4 + 14);
+				SetupSquareUV(i * 4 + 5, i * 4 + 6, i * 4 + 7, i * 4 + 8, i * 4 + 9, i * 4 + 10);
+				SetupSquareUV(i * 4 + 9, i * 4 + 10, i * 4 + 11, i * 4 + 12, i * 4 + 13, i * 4 + 14);
 
 				// Finish last UVs manually because there's an odd number of head/tail quads
 				float segW = Vector3.Distance(vertices[i * 4 + 13], vertices[i * 4 + 14]);
 				float segH = Vector3.Distance(vertices[i * 4 + 13], (vertices[i * 4 + 15] + vertices[i * 4 + 14]) * 0.5f);
 
-				uvs[++uvIndex] = new Vector2(.5f, currentUVY - segH/segW);
+				uvs[++uvIndex] = new Vector2(.5f, (currentUVY.x + currentUVY.y) * 0.5f - segH/segW);
 			}
 		}
 
 		triangles = triangleList.ToArray();
 	}
 
-	void SetupSquareUV(int v1, int v2, int v3, int v4)
+	void SetupSquareUV(int prev1, int prev2, int v1, int v2, int v3, int v4)
 	{
-		float segW = Vector3.Distance(vertices[v1], vertices[v2]);
-		float segH = Vector3.Distance(vertices[v1], vertices[v3]);
+		float segW, segH1, segH2, leftY, rightY;
 
-		float topY = currentUVY - segH/segW;
+		if(prev1 != -1 && prev2 != -1)
+		{
+			segW = Vector3.Distance(vertices[prev1], vertices[prev2]) + Vector3.Distance(vertices[v1], vertices[v2]);
+			segW *= 0.5f;
 
-		uvs[++uvIndex] = new Vector2(.0f, currentUVY);
-		uvs[++uvIndex] = new Vector2(1.0f, currentUVY);
-		uvs[++uvIndex] = new Vector2(.0f, topY);
-		uvs[++uvIndex] = new Vector2(1.0f, topY);
+			segH1 = Vector3.Distance(vertices[prev1], vertices[v1]);
+			segH2 = Vector3.Distance(vertices[prev2], vertices[v2]);
 
-		currentUVY = topY;
+			leftY = currentUVY.x - segH1/segW;
+			rightY = currentUVY.y - segH2/segW;
+
+			uvs[++uvIndex] = new Vector2(.0f,  leftY);
+			uvs[++uvIndex] = new Vector2(1.0f, rightY);
+
+			currentUVY = new Vector2(leftY, rightY);
+		}
+
+		segW = Vector3.Distance(vertices[v1], vertices[v2]) + Vector3.Distance(vertices[v3], vertices[v4]);
+		segW *= 0.5f;
+		
+		segH1 = Vector3.Distance(vertices[v1], vertices[v3]);
+		segH2 = Vector3.Distance(vertices[v2], vertices[v4]);
+
+		leftY = currentUVY.x - segH1/segW;
+		rightY = currentUVY.y - segH2/segW;
+		
+		uvs[++uvIndex] = new Vector2(.0f, currentUVY.x);
+		uvs[++uvIndex] = new Vector2(1.0f, currentUVY.y);
+
+		currentUVY = new Vector2(leftY, rightY);
 	}
-
+	
 	void SetupTriangleUV(int v1, int v2, int v3)
 	{
 		float segW = Vector3.Distance(vertices[v2], vertices[v3]);
 		float segH = Vector3.Distance(vertices[v1], (vertices[v2] + vertices[v3]) * 0.5f);
-		
-		float topY = currentUVY - segH/segW;
 
-		uvs[++uvIndex] = new Vector2(0.5f, currentUVY);
+		float curAverageUVY = (currentUVY.x + currentUVY.y) * 0.5f;
+		float topY = curAverageUVY - segH/segW;
+
+		uvs[++uvIndex] = new Vector2(0.5f, curAverageUVY);
 		uvs[++uvIndex] = new Vector2(.0f, topY);
 		uvs[++uvIndex] = new Vector2(1.0f, topY);
 
-		currentUVY = topY;
+		currentUVY = new Vector2(topY, topY);
 	}
 
 	void CreateMesh()
@@ -387,6 +410,13 @@ public class Worm : MonoBehaviour
 		Mesh mesh = new Mesh();
 		GetComponent<MeshFilter>().mesh = mesh;
 		mesh.vertices = vertices;
+
+		for(int i = 0; i < uvs.Length; i++)
+		{
+			Debug.Log(i + ": " + uvs[i]);
+		}
+
+		Debug.Break();
 
 		mesh.uv = uvs;
 		mesh.triangles = triangles;
@@ -552,10 +582,10 @@ public class Worm : MonoBehaviour
 
 //		Debug.Log(alpha);
 
-		mat.SetTextureOffset("_MainTex", new Vector2(0.0f, Mathf.Lerp(texOffsetMinMax.x, texOffsetMinMax.y, alpha)));
+		//mat.SetTextureOffset("_MainTex", new Vector2(0.0f, Mathf.Lerp(texOffsetMinMax.x, texOffsetMinMax.y, alpha)));
 		mat.SetTextureOffset("_OverlayTex", new Vector2(0.0f, Mathf.Lerp(texOffsetMinMax.x, texOffsetMinMax.y, alpha)));
 
-		mat.SetTextureScale("_MainTex",  new Vector2(1.0f, Mathf.Lerp(texScaleMinMax.x, texScaleMinMax.y, alpha)));
+		//mat.SetTextureScale("_MainTex",  new Vector2(1.0f, Mathf.Lerp(texScaleMinMax.x, texScaleMinMax.y, alpha)));
 		mat.SetTextureScale("_OverlayTex",  new Vector2(1.0f, Mathf.Lerp(texScaleMinMax.x, texScaleMinMax.y, alpha)));
 	}
 

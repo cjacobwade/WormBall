@@ -28,7 +28,9 @@ public class Worm : MonoBehaviour
 
 	[SerializeField] float swingDamp = 0.97f;
 	[SerializeField] float circleDist;
-	
+
+	delegate void InputMethod();
+	InputMethod WiggleLogic;
 	[SerializeField] float wiggleTime = 0.7f;
 	float wiggleTimer = -1.0f;
 	bool lastHitLeft = false;
@@ -72,6 +74,8 @@ public class Worm : MonoBehaviour
 	// Use this for initialization
 	void Awake () 
 	{
+		//WiggleLogic = WiggleAlternateLogic;
+		WiggleLogic = StarwhalWiggleLogic;
 		initSegmentNum = segmentNum;
 
 		mouth = transform.GetChild(0);
@@ -416,7 +420,7 @@ public class Worm : MonoBehaviour
 			Debug.Log(i + ": " + uvs[i]);
 		}
 
-		Debug.Break();
+		//Debug.Break();
 
 		mesh.uv = uvs;
 		mesh.triangles = triangles;
@@ -597,14 +601,14 @@ public class Worm : MonoBehaviour
 			Application.LoadLevel(Application.loadedLevel);
 		}
 
-		if(Input.GetKeyDown(KeyCode.C))
-		{
-			Catch();
-		}
-		if(Input.GetKeyDown(KeyCode.P))
-		{
-			Puke ();
-		}
+//		if(Input.GetKeyDown(KeyCode.C))
+//		{
+//			Catch();
+//		}
+//		if(Input.GetKeyDown(KeyCode.P))
+//		{
+//			Puke ();
+//		}
 
 		inputVec = new Vector3(Input.GetAxis("Horizontal-P" + playerNum), Input.GetAxis("Vertical-P" + playerNum), 0.0f);
 
@@ -643,8 +647,9 @@ public class Worm : MonoBehaviour
 
 	void FixedUpdate()
 	{
+		WiggleLogic();
 		Movement();
-		Rotation();
+		BodyFollow();
 
 		if(carrying)
 		{
@@ -664,8 +669,6 @@ public class Worm : MonoBehaviour
 
 	void Movement()
 	{
-		WiggleLogic();
-
 		float clampedMoveTimer = Mathf.Clamp(moveTimer, 0.0f, moveTime);
 		float appliedSpeed = moveSpeed * moveForce.Evaluate(clampedMoveTimer/moveTime); //* wiggleBoost;
 
@@ -702,7 +705,7 @@ public class Worm : MonoBehaviour
 	}
 
 	// Check for alternating between left and right
-	void WiggleLogic()
+	void WiggleAlternateLogic()
 	{
 		if(wiggleTimer < 0.0f)
 		{
@@ -735,12 +738,25 @@ public class Worm : MonoBehaviour
 				wiggleTimer = 0.0f;
 			}
 		}
+
+		transform.rotation *= Quaternion.Euler(0.0f, 0.0f, -rotSpeed * inputVec.x);
 	}
 
-	void Rotation()
+	void StarwhalWiggleLogic()
 	{
-		transform.rotation *= Quaternion.Euler(0.0f, 0.0f, -rotSpeed * inputVec.x);
+		// Look at normalized analog direction
+		// A to move
 
+		transform.LookAt(transform.position + inputVec.normalized, Vector3.forward);
+
+		if(Input.GetButton("Jump-P" + playerNum))
+		{
+			moveTimer = moveTime;
+		}
+	}
+
+	void BodyFollow()
+	{
 		segments[0].LookAt(transform.position, Vector3.forward);
 		segments[0].rotation *= Quaternion.Euler(90.0f, 0.0f, 0.0f);
 		
@@ -767,7 +783,7 @@ public class Worm : MonoBehaviour
 		{
 			if(index >= segments.Length || index < 0)
 			{
-				Debug.Break();
+				//Debug.Break();
 				Debug.LogError("Invalid segment index");
 			}
 

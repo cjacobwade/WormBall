@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class Worm : MonoBehaviour 
 {
+	[SerializeField] Vector3 testRot;
+
 	public int playerNum = 0;
 	[HideInInspector] public bool carrying = false;
 
@@ -35,10 +37,22 @@ public class Worm : MonoBehaviour
 	float wiggleTimer = -1.0f;
 	bool lastHitLeft = false;
 
+	// Starwhal Wiggle Logic
+	[SerializeField] float lookSpeed = 7f;
+	Vector3 adjInputVec = Vector3.zero;
+	
+	// Skilled Tank Wiggle Logic
+	[SerializeField] float targetAlternateTime = 0.4f;
+	[SerializeField] float speedBoostFalloffRange = 0.2f;
+	float currAlternateTimer = 0f;
+	
 	[SerializeField] float moveTime = 1.0f;
 	float moveTimer = 0.0f;
 	[SerializeField] AnimationCurve moveForce;
-	
+
+	[SerializeField] float maxSpeedBoost = 1.3f;
+	float speedBoost = 1f;
+
 	Vector3 inputVec = Vector3.zero;
 	[SerializeField] bool debug;
 
@@ -51,7 +65,6 @@ public class Worm : MonoBehaviour
 	float pukeTimer = 0.0f;
 	[SerializeField] float pukeTime = 1.4f;
 	[SerializeField] float pukeForce = 50.0f;
-	[SerializeField] float scaleTime = 0.7f;
 
 	Transform mouth;
 	[SerializeField] Sprite openSprite;
@@ -72,12 +85,16 @@ public class Worm : MonoBehaviour
 	Vector2 currentUVY = Vector2.zero;
 
 	// Use this for initialization
-	void Awake () 
+	void Start () 
 	{
 		//WiggleLogic = WiggleAlternateLogic;
-		WiggleLogic = StarwhalWiggleLogic;
+		//WiggleLogic = StarwhalWiggleLogic
+		//WiggleLogic = TankWiggleLogic;
+		WiggleLogic = SkilledTankWiggleLogic;
 		initSegmentNum = segmentNum;
 
+		gameObject.layer = LayerMask.NameToLayer("Beak" + playerNum);
+		transform.GetChild(0).gameObject.layer = LayerMask.NameToLayer("Beak" + playerNum);
 		mouth = transform.GetChild(0);
 
 		moveSpeed = defaultMoveSpeed;
@@ -85,7 +102,29 @@ public class Worm : MonoBehaviour
 		defaultScale = transform.localScale.x;
 
 		SetupBody(segmentNum);
-		renderer.material.SetFloat("_OverlayAlpha", 0.0f);
+		GetComponent<Renderer>().material.SetFloat("_OverlayAlpha", 0.0f);
+	}
+
+	public void SetControls(string schemeName)
+	{
+		if(schemeName == "OGControls")
+		{
+			WiggleLogic = WiggleAlternateLogic;
+		}
+		else if(schemeName == "StarwhalControls")
+		{
+			WiggleLogic = StarwhalWiggleLogic;
+		}
+		else if(schemeName == "TankControls")
+		{
+			WiggleLogic = TankWiggleLogic;
+		}
+		else if(schemeName == "SkilledTankControls")
+		{
+			WiggleLogic = SkilledTankWiggleLogic;
+		}
+
+		speedBoost = 1f;
 	}
 
 	public void SetupBody(int length)
@@ -111,13 +150,23 @@ public class Worm : MonoBehaviour
 
 			segment.name = "Segment" + i;
 			segment.transform.localScale = Vector3.one * transform.localScale.x;
-			segment.GetComponent<SpringJoint2D>().connectedBody = (i == 0) ? rigidbody2D : segments[i - 1].rigidbody2D;
+			segment.GetComponent<SpringJoint2D>().connectedBody = (i == 0) ? GetComponent<Rigidbody2D>() : segments[i - 1].GetComponent<Rigidbody2D>();
 			segments[i] = segment.transform;
 
 			if(i == segmentNum - 1)
 			{
+				segment.layer = LayerMask.NameToLayer("Tail");
 				Tail tail = segment.AddComponent<Tail>();
 				tail.Setup (this);
+			}
+			else if(i <= 1)
+			{
+				//Debug.Log("Segment" + playerNum.ToString());
+				segment.layer = LayerMask.NameToLayer("Head" + playerNum.ToString());
+			}
+			else
+			{
+				segment.layer = LayerMask.NameToLayer("Segment");
 			}
 		}
 
@@ -128,9 +177,8 @@ public class Worm : MonoBehaviour
 	GameObject CreateSegment(Vector3 spawnPos)
 	{
 		GameObject segment = WadeUtils.Instantiate( segmentPrefab, spawnPos, segmentPrefab.transform.rotation);
-		segment.transform.parent = segmentHolder;
-		segment.layer = segmentHolder.gameObject.layer;
-		
+		segment.transform.SetParent(segmentHolder);
+
 		SpringJoint2D segJoint = segment.GetComponent<SpringJoint2D>();
 		segJoint.collideConnected = false;
 		segJoint.frequency = 0.0f;
@@ -165,9 +213,10 @@ public class Worm : MonoBehaviour
 
 		GameObject segment = CreateSegment(lastSeg.position - lastSeg.up * circleDist);
 		segment.name = "Segment" + segments.Length;
+		segment.layer = LayerMask.NameToLayer("Head" + playerNum);
 		segment.transform.localScale = Vector3.one * lastSeg.localScale.x;
 
-		segment.GetComponent<SpringJoint2D>().connectedBody = lastSeg.rigidbody2D;
+		segment.GetComponent<SpringJoint2D>().connectedBody = lastSeg.GetComponent<Rigidbody2D>();
 
 		Tail tail = segment.AddComponent<Tail>();
 		tail.Setup(this);
@@ -314,11 +363,9 @@ public class Worm : MonoBehaviour
 			}
 			else
 			{
-				// COS(PI/4) = 0.707
 				vertices[i * 4 + 11] = transform.InverseTransformPoint (seg.position - (seg.up - seg.right) * 0.707f * scale/2.0f);
 				vertices[i * 4 + 12] = transform.InverseTransformPoint (seg.position - (seg.up + seg.right) * 0.707f * scale/2.0f);
 
-				// COS(PI * 3/8) = 0.924
 				vertices[i * 4 + 13] = transform.InverseTransformPoint (seg.position - (seg.up * 0.924f - seg.right * 0.383f) * scale/2.0f);
 				vertices[i * 4 + 14] = transform.InverseTransformPoint (seg.position - (seg.up * 0.924f + seg.right * 0.383f) * scale/2.0f);
 
@@ -415,10 +462,10 @@ public class Worm : MonoBehaviour
 		GetComponent<MeshFilter>().mesh = mesh;
 		mesh.vertices = vertices;
 
-		for(int i = 0; i < uvs.Length; i++)
-		{
-			Debug.Log(i + ": " + uvs[i]);
-		}
+//		for(int i = 0; i < uvs.Length; i++)
+//		{
+//			Debug.Log(i + ": " + uvs[i]);
+//		}
 
 		//Debug.Break();
 
@@ -476,11 +523,11 @@ public class Worm : MonoBehaviour
 		ChangeSegmentSize(5, carryScale.x);	
 	}
 
-	public void Puke()
+	public void Puke(bool spawnBall)
 	{
 		carrying = false;
 
-		renderer.material.SetFloat("_OverlayAlpha", 0.0f);
+		GetComponent<Renderer>().material.SetFloat("_OverlayAlpha", 0.0f);
 
 		moveSpeed = defaultMoveSpeed;
 		rotSpeed = defaultRotSpeed;
@@ -493,22 +540,22 @@ public class Worm : MonoBehaviour
 		ChangeHeadSize(defaultScale);
 		ChangeAllSegmentSizes(defaultScale);
 
-		StartCoroutine(PukeEffects());
+		StartCoroutine(PukeEffects(spawnBall));
 	}
 
-	IEnumerator PukeEffects()
+	IEnumerator PukeEffects(bool spawnBall)
 	{
 		isPuking = true;
 		pukeTimer = 0.0f;
-		bool ballSpawned = false;
+		bool ballSpawned = !spawnBall;
 
 		GameObject pukeEffectObj = WadeUtils.Instantiate(pukeEffectPrefab, transform.position, transform.rotation);
 		mouth.GetComponent<SpriteRenderer>().sprite = openSprite;
 
-		rigidbody2D.velocity = Vector3.zero;
+		GetComponent<Rigidbody2D>().velocity = Vector3.zero;
 		for(int i = 0; i < segments.Length; i++)
 		{
-			segments[i].rigidbody2D.velocity = Vector3.zero;
+			segments[i].GetComponent<Rigidbody2D>().velocity = Vector3.zero;
 		}
 
 		while(pukeTimer < pukeTime)
@@ -531,8 +578,8 @@ public class Worm : MonoBehaviour
 				{
 					GameObject ballObj = WadeUtils.Instantiate(ballPrefab, transform.position + transform.up, transform.rotation);
 					ballObj.layer = LayerMask.NameToLayer("IgnorePlayer");
-					ballObj.rigidbody2D.AddForce(transform.up * pukeForce * 100);
-					ballObj.rigidbody2D.AddTorque(pukeForce * 0.01f);
+					ballObj.GetComponent<Rigidbody2D>().AddForce(transform.up * pukeForce * 100);
+					ballObj.GetComponent<Rigidbody2D>().AddTorque(pukeForce * 0.01f);
 
 					Ball ball = ballObj.GetComponent<Ball>();
 					ball.StartCoroutine(ball.ScaleUp(0.0f));
@@ -540,10 +587,10 @@ public class Worm : MonoBehaviour
 				}
 				else
 				{
-					rigidbody2D.AddForce(-transform.up * pukeForce * (1.0f - pukeTimer/pukeTime));
+					GetComponent<Rigidbody2D>().AddForce(-transform.up * pukeForce * (1.0f - pukeTimer/pukeTime));
 					for(int i = 0; i < segments.Length; i++)
 					{
-						segments[i].rigidbody2D.AddForce(-transform.up * pukeForce * (1.0f - pukeTimer/pukeTime));
+						segments[i].GetComponent<Rigidbody2D>().AddForce(-transform.up * pukeForce * (1.0f - pukeTimer/pukeTime));
 					}
 				}
 			}
@@ -552,12 +599,12 @@ public class Worm : MonoBehaviour
 			{
 				if(pukeEffectObj)
 				{
-					pukeEffectObj.particleSystem.enableEmission = false;
+					pukeEffectObj.GetComponent<ParticleSystem>().enableEmission = false;
 				}
 			}
 			else
 			{
-				rigidbody2D.AddForce(-transform.up * pukeForce);
+				GetComponent<Rigidbody2D>().AddForce(-transform.up * pukeForce);
 			}
 
 			pukeTimer += Time.deltaTime;
@@ -581,10 +628,8 @@ public class Worm : MonoBehaviour
 
 	void SetMaterialRelative()
 	{
-		Material mat = renderer.material;
+		Material mat = GetComponent<Renderer>().material;
 		float alpha = segments.Length/(float)(maxSegments - minSegments);
-
-//		Debug.Log(alpha);
 
 		//mat.SetTextureOffset("_MainTex", new Vector2(0.0f, Mathf.Lerp(texOffsetMinMax.x, texOffsetMinMax.y, alpha)));
 		mat.SetTextureOffset("_OverlayTex", new Vector2(0.0f, Mathf.Lerp(texOffsetMinMax.x, texOffsetMinMax.y, alpha)));
@@ -601,14 +646,14 @@ public class Worm : MonoBehaviour
 			Application.LoadLevel(Application.loadedLevel);
 		}
 
-//		if(Input.GetKeyDown(KeyCode.C))
-//		{
-//			Catch();
-//		}
-//		if(Input.GetKeyDown(KeyCode.P))
-//		{
-//			Puke ();
-//		}
+		if(Input.GetKeyDown(KeyCode.C))
+		{
+			Catch();
+		}
+		if(Input.GetKeyDown(KeyCode.P))
+		{
+			Puke (false);
+		}
 
 		inputVec = new Vector3(Input.GetAxis("Horizontal-P" + playerNum), Input.GetAxis("Vertical-P" + playerNum), 0.0f);
 
@@ -639,7 +684,7 @@ public class Worm : MonoBehaviour
 
 		if(carrying)
 		{
-			renderer.material.SetFloat("_OverlayAlpha", throbColorAmount + Mathf.Sin(carryTimer * throbSpeed) * throbColorAmount);
+			GetComponent<Renderer>().material.SetFloat("_OverlayAlpha", throbColorAmount + Mathf.Sin(carryTimer * throbSpeed) * throbColorAmount);
 			ChangeSegmentSize(segments.Length - 1, carryScale.x + throbScaleAmount + Mathf.Sin(carryTimer * throbSpeed) * throbScaleAmount);
 			carryTimer += Time.deltaTime;
 		}
@@ -647,8 +692,11 @@ public class Worm : MonoBehaviour
 
 	void FixedUpdate()
 	{
-		WiggleLogic();
-		Movement();
+		if(WiggleLogic != null)
+		{
+			WiggleLogic();
+			Movement();
+		}
 		BodyFollow();
 
 		if(carrying)
@@ -670,27 +718,27 @@ public class Worm : MonoBehaviour
 	void Movement()
 	{
 		float clampedMoveTimer = Mathf.Clamp(moveTimer, 0.0f, moveTime);
-		float appliedSpeed = moveSpeed * moveForce.Evaluate(clampedMoveTimer/moveTime); //* wiggleBoost;
+		float appliedSpeed = moveSpeed * speedBoost * moveForce.Evaluate(clampedMoveTimer/moveTime); //* wiggleBoost;
 
 		if(moveTimer > 0.0f)
 		{
 			if(pukeTimer <= 0.0f)
 			{
-				rigidbody2D.velocity = transform.up * appliedSpeed;
+				GetComponent<Rigidbody2D>().velocity = transform.up * appliedSpeed;
 			}
 
 			for(int i = 0; i < segments.Length; i++)
 			{
-				segments[i].rigidbody2D.velocity *= swingDamp;
+				segments[i].GetComponent<Rigidbody2D>().velocity *= swingDamp;
 			}
 		}
 		else if(!isPuking)
 		{
-			rigidbody2D.velocity = Vector2.Lerp(rigidbody2D.velocity, Vector2.zero, Time.deltaTime);
+			GetComponent<Rigidbody2D>().velocity = Vector2.Lerp(GetComponent<Rigidbody2D>().velocity, Vector2.zero, Time.deltaTime);
 
 			for(int i = 0; i < segments.Length; i++)
 			{
-				segments[i].rigidbody2D.velocity = Vector3.Lerp(segments[i].rigidbody2D.velocity, Vector2.zero, Time.deltaTime/2.0f);
+				segments[i].GetComponent<Rigidbody2D>().velocity = Vector3.Lerp(segments[i].GetComponent<Rigidbody2D>().velocity, Vector2.zero, Time.deltaTime/2.0f);
 			}
 		}
 
@@ -744,15 +792,79 @@ public class Worm : MonoBehaviour
 
 	void StarwhalWiggleLogic()
 	{
-		// Look at normalized analog direction
-		// A to move
+		if(inputVec != Vector3.zero)
+		{
+			adjInputVec = inputVec.normalized;
+			adjInputVec.y = -adjInputVec.y;
+		}
 
-		transform.LookAt(transform.position + inputVec.normalized, Vector3.forward);
+		float offsetAngle = Vector2.Angle(Vector2.right, adjInputVec);
+		if(adjInputVec.y >= 0.5f)
+		{
+			offsetAngle = 360f - offsetAngle;
+		}
+
+		//Debug.Log(offsetAngle);
+		transform.rotation = Quaternion.Lerp(transform.rotation, 
+		                                     Quaternion.Euler(0f, 0f, offsetAngle - 90f), 
+		                                     Time.deltaTime * lookSpeed);
 
 		if(Input.GetButton("Jump-P" + playerNum))
 		{
 			moveTimer = moveTime;
 		}
+	}
+
+	void TankWiggleLogic()
+	{
+		transform.rotation *= Quaternion.Euler(0.0f, 0.0f, -rotSpeed * inputVec.x);
+
+		if(Input.GetButton("Jump-P" + playerNum))
+		{
+			moveTimer = moveTime;
+		}
+	}
+
+	void SkilledTankWiggleLogic()
+	{
+		transform.rotation *= Quaternion.Euler(0.0f, 0.0f, -rotSpeed * inputVec.x);
+		
+		if(Input.GetButton("Jump-P" + playerNum))
+		{
+			moveTimer = moveTime;
+		}
+
+		// Alternating speedboost logic
+		if(Mathf.Abs(inputVec.x) > 0.1f)
+		{
+			bool hitLeft = inputVec.x < 0.0f;
+			if(lastHitLeft != hitLeft)
+			{
+				lastHitLeft = hitLeft;
+
+				currAlternateTimer = Mathf.Clamp(currAlternateTimer, targetAlternateTime - speedBoostFalloffRange,
+				                                    				 targetAlternateTime + speedBoostFalloffRange);
+
+				float speedBoostAlpha = Mathf.Abs(targetAlternateTime - currAlternateTimer)/speedBoostFalloffRange;
+
+				if(speedBoost < Mathf.Lerp(maxSpeedBoost, 1f, speedBoostAlpha))
+				{
+					speedBoost = Mathf.Lerp(maxSpeedBoost, 1f, speedBoostAlpha);
+				}
+				currAlternateTimer = 0f;
+			}
+		}
+
+		currAlternateTimer += Time.fixedDeltaTime;
+
+		if(speedBoost > 1f)
+		{
+			Debug.Log(speedBoost);
+
+			speedBoost -= Time.fixedDeltaTime;
+			Mathf.Clamp(speedBoost, 1f, Mathf.Infinity);
+		}
+
 	}
 
 	void BodyFollow()
@@ -856,7 +968,7 @@ public class Worm : MonoBehaviour
 			{
 				if(tail.worm.carrying)
 				{
-					tail.worm.Puke();
+					tail.worm.Puke(true);
 				}
 			}
 		}

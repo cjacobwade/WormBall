@@ -40,7 +40,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 		UpdateState();
 	}
 
-	void Update () 
+	void FixedUpdate () 
 	{
 		if(gameState != prevState)
 		{
@@ -57,6 +57,8 @@ public class GameManager : SingletonBehaviour<GameManager>
 			{
 				return;
 			}
+
+			//TODO: better, responsive menu
 
 			for(int i = 0; i < 4; i++)
 			{
@@ -183,8 +185,6 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	void GameSetup()
 	{
-		Debug.Log("Spawn");
-
 		gameObj.SetActive(true);
 
 		List<Color> colors = colorOptions.ToList();
@@ -340,6 +340,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 		gameObj.SetActive(false);
 		endGameObj.SetActive(false);
 		WormManager.instance.DestroyAllWorms();
+		ScoreManager.instance.ResetTimer();
 
 		// Fade out end music
 	}

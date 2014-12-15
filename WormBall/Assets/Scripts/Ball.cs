@@ -3,11 +3,9 @@ using System.Collections;
 
 public class Ball : MonoBehaviour 
 {
-	[SerializeField] float maxDistance = 30.0f;
 	[SerializeField] float scale = 1.0f;
 	[SerializeField] float speedLoss;
-
-	[SerializeField] float scaleSpeed = 1.0f;
+	
 	[SerializeField] float scaleTime = 1.5f;
 	float scaleTimer = 0.0f;
 
@@ -28,7 +26,7 @@ public class Ball : MonoBehaviour
 
 		}
 
-		lastVel = rigidbody2D.velocity;
+		lastVel = GetComponent<Rigidbody2D>().velocity;
 	}
 
 	bool IsOutOfBounds()
@@ -144,7 +142,7 @@ public class Ball : MonoBehaviour
 	void OnCollisionEnter2D(Collision2D col)
 	{
 		Vector2 velocity = lastVel;
-		rigidbody2D.velocity = Vector3.Reflect(velocity, col.contacts[0].normal) * (1 - speedLoss);
+		GetComponent<Rigidbody2D>().velocity = Vector3.Reflect(velocity, col.contacts[0].normal) * (1 - speedLoss);
 	}
 
 //	void Reset()

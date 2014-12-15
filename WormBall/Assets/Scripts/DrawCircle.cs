@@ -7,8 +7,10 @@ public class DrawCircle : MonoBehaviour
 	float twoPI = 2.0f * Mathf.PI;
 	float lastFillAmount = 1.0f;
 	[Range (0.0f, 1.0f)] public float fillAmount;
-	int outerVerts = 360;
+	[SerializeField] int outerVerts = 360;
 	[SerializeField] float circleSize = 1.0f;
+
+	[SerializeField] bool debug = false;
 
 	Vector3[] vertices;
 	Vector2[] uvs;
@@ -23,13 +25,12 @@ public class DrawCircle : MonoBehaviour
 		if(fillAmount != lastFillAmount)
 		{
 			CreateMesh();
+			lastFillAmount = fillAmount;
 		}
 		else
 		{
 			UpdateMesh();
 		}
-
-		lastFillAmount = fillAmount;
 	}
 
 	void SetupMeshData()
@@ -44,7 +45,7 @@ public class DrawCircle : MonoBehaviour
 
 		for(int i = 1; i < outerVerts + 2; i++)
 		{
-			vertices[i] = new Vector3(Mathf.Cos((float)i * twoPI * fillAmount /(float)outerVerts) * circleSize, 
+			vertices[i] = new Vector3(Mathf.Cos((float)i * twoPI * fillAmount/(float)outerVerts) * circleSize, 
 			                          Mathf.Sin((float)i * twoPI * fillAmount/(float)outerVerts) * circleSize, 
 			                          0.0f);
 
@@ -82,5 +83,14 @@ public class DrawCircle : MonoBehaviour
 		mesh.uv = uvs;
 
 		mesh.RecalculateNormals();
+	}
+
+	void OnGUI()
+	{
+		for(int i = 0; debug && i < vertices.Length; i++)
+		{
+			Vector3 screenVec = Camera.main.WorldToScreenPoint(Quaternion.Euler(0f, 0f, 90f) * vertices[i]);
+			GUI.Label(new Rect(screenVec.x - 3.0f, Screen.height - (screenVec.y + 3.0f), 20.0f, 20.0f), i.ToString());
+		}
 	}
 }

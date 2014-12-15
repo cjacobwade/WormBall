@@ -184,7 +184,7 @@ public class SoundManager : MonoBehaviour
             sounders[currentSounder].name = clip + "Sounder";
 
             sounders[currentSounder] = new GameObject("Sounder" + currentSounder);
-            sounders[currentSounder].AddComponent("AudioSource");
+            sounders[currentSounder].AddComponent<AudioSource>();
             sounders[currentSounder].GetComponent<AudioSource>().playOnAwake = false;
             sounders[currentSounder].transform.parent = sounderHolder.transform;
         }
@@ -217,7 +217,7 @@ public class SoundManager : MonoBehaviour
             songers[currentSonger].name = clip + "Songer";
 
             songers[currentSonger] = new GameObject("Songer" + currentSonger);
-            songers[currentSonger].AddComponent("AudioSource");
+            songers[currentSonger].AddComponent<AudioSource>();
             songers[currentSonger].GetComponent<AudioSource>().playOnAwake = false;
             songers[currentSonger].transform.parent = songerHolder.transform;
         }

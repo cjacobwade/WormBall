@@ -57,7 +57,7 @@ public class WormText : MonoBehaviour
 
 				if(prevFontSize != fontSize || 
 				   prevLeftColor != leftColor ||
-				   prevRightColor != prevRightColor)
+				   prevRightColor != rightColor)
 				{
 					Text letterText = letterObjs[i].GetComponent<Text>();
 					letterText.fontSize = fontSize;
@@ -94,7 +94,7 @@ public class WormText : MonoBehaviour
 				{
 					GameObject letterObj = WadeUtils.Instantiate(letterPrefab);
 					Text letterText = letterObj.GetComponent<Text>();
-					letterText.rectTransform.parent = transform;
+					letterText.rectTransform.SetParent(transform);
 					letterText.rectTransform.localScale = Vector3.one;
 					letterText.text = text[i].ToString();
 

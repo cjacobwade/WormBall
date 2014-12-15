@@ -35,10 +35,6 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 				drawCircle.fillAmount = gameTime/totalGameTime;
 			}
 		}
-		else
-		{
-			ResetTimer();
-		}
 	}
 
 	public void ResetScore()

@@ -8,11 +8,11 @@ public class UVScroll : MonoBehaviour
 
 	void Awake()
 	{
-		initOffset = renderer.material.mainTextureOffset;
+		initOffset = GetComponent<Renderer>().material.mainTextureOffset;
 	}
 
 	void FixedUpdate () 
 	{
-		renderer.material.mainTextureOffset += initOffset + scrollSpeed * Time.deltaTime;
+		GetComponent<Renderer>().material.mainTextureOffset += initOffset + scrollSpeed * Time.deltaTime;
 	}
 }

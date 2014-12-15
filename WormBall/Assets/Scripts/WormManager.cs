@@ -74,8 +74,16 @@ public class WormManager : SingletonBehaviour<WormManager>
 
 		Worm worm = wormObj.GetComponentInChildren<Worm>();
 		worm.playerNum = playerNum;
-		worm.renderer.material.SetColor("_MainTint", color);
+		worm.GetComponent<Renderer>().material.SetColor("_MainTint", color);
 
 		return worm;
+	}
+
+	public void SetControlScheme(string schemeName)
+	{
+		foreach(Worm worm in GameObject.FindObjectsOfType<Worm>())
+		{
+			worm.SetControls(schemeName);
+		}
 	}
 }

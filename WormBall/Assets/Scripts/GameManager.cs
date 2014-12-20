@@ -12,6 +12,13 @@ public enum GameState
 	EndGame				= 3
 }
 
+public enum GameType
+{
+	WrapBall		= 0,
+	Soccer			= 1,
+	KOTH			= 2
+}
+
 public class GameManager : SingletonBehaviour<GameManager> 
 {
 	public GameState gameState;
@@ -42,6 +49,11 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	void FixedUpdate () 
 	{
+		if(Time.frameCount % 30 == 0)
+		{
+			WadeUtils.CheckForController();
+		}
+
 		if(gameState != prevState)
 		{
 			UpdateState();
@@ -53,52 +65,44 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		if(gameState == GameState.Menu)
 		{
-			if(modeTime < 1.5f)
-			{
-				return;
-			}
-
-			//TODO: better, responsive menu
-
 			for(int i = 0; i < 4; i++)
 			{
-				if(Input.GetAxis("Horizontal-P" + (i + 1)) < -0.1f)
-				{
-					twoPlayer = true;
-					gameState = GameState.Game;
-				}
-				else if(Input.GetAxis("Horizontal-P" + (i + 1)) > 0.1f)
-				{
-					twoPlayer = false;
-					gameState = GameState.Game;
-				}
+//				if(Input.GetAxis("Horizontal-P" + (i + 1)) < -0.1f)
+//				{
+//					StartGame(true);
+//				}
+//				else if(Input.GetAxis("Horizontal-P" + (i + 1)) > 0.1f)
+//				{
+//					StartGame(false);
+//				}
 			}
 		}
-		else
+		else if(Input.GetKeyDown(KeyCode.Escape))
 		{
-			if(modeTime < 1.5f)
-			{
-				return;
-			}
-
-			if(Input.GetKeyDown(KeyCode.Escape))
-			{
-				gameState = GameState.Menu;
-			}
+			ChangeGameState(GameState.Menu);
 		}
 
 		if(gameState == GameState.EndGame)
 		{
-			if(modeTime < 1.5f)
-			{
-				return;
-			}
-
 			if(Input.anyKeyDown)
 			{
-				gameState = GameState.Menu;
+				ChangeGameState(GameState.Menu);
 			}
 		}
+	}
+
+	void ChangeGameState(GameState newState)
+	{
+		if(modeTime >= 1.5f)
+		{
+			gameState = newState;
+		}
+	}
+
+	public void StartGame(bool inTwoPlayer)
+	{
+		twoPlayer = inTwoPlayer;
+		ChangeGameState(GameState.Game);
 	}
 
 	public void ResetBall()
@@ -252,7 +256,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	void FourPlayer()
 	{
-		for(int i = 0; i < 4; i++)
+		for(int i = 0; i < 6; i++)
 		{
 			Vector3 rand = Random.insideUnitSphere * 0.4f;
 			rand += Vector3.one * 0.6f;
@@ -260,7 +264,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 			Vector3 spawnPos;
 			Quaternion spawnRot;
 			bool lookUp = true;
-			if(i < 2)
+			if(i < 3)
 			{
 				spawnRot = Quaternion.identity;
 				spawnPos = transform.position - Vector3.right * 5.0f * (i + 1);
@@ -274,9 +278,9 @@ public class GameManager : SingletonBehaviour<GameManager>
 				spawnPos -= Vector3.up * 3.0f;
 			}
 
-			Color spawnColor = i < 2 ? team1Color : team2Color;
+			Color spawnColor = i < 3 ? team1Color : team2Color;
 
-			if(i % 2 != 0)
+			if(i % 3 != 0)
 			{
 				spawnColor += new Color(0.25f, 0.25f, 0.25f, 0.0f);
 			}

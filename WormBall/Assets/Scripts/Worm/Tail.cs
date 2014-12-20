@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Tail : MonoBehaviour 
 {
-	[HideInInspector] public Worm worm;
+	public Worm worm;
 	[SerializeField] float seekRadius = 1.1f;
 	[SerializeField] float fleeRadius = 0.8f;
 	CircleCollider2D triggerCol;

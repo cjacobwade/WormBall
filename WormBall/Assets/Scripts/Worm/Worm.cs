@@ -4,10 +4,8 @@ using System.Collections.Generic;
 
 public class Worm : MonoBehaviour 
 {
-	[SerializeField] Vector3 testRot;
-
 	public int playerNum = 0;
-	[HideInInspector] public bool carrying = false;
+	public bool carrying = false;
 
 	[SerializeField] float defaultMoveSpeed = 12.0f;
 	[SerializeField] float defaultRotSpeed = 5.0f;
@@ -16,6 +14,9 @@ public class Worm : MonoBehaviour
 	[SerializeField] float carryMoveSpeed = 9.0f;
 	[SerializeField] float carryRotSpeed = 3.7f;
 	[SerializeField] Vector2 carryScale = new Vector2(0.5f, 2.0f);
+
+	[SerializeField] float canMoveTime = 0.7f;
+	float canMoveTimer = 0f;
 
 	float moveSpeed = 5.0f;
 	float rotSpeed = 3.0f;
@@ -51,7 +52,7 @@ public class Worm : MonoBehaviour
 	[SerializeField] AnimationCurve moveForce;
 
 	[SerializeField] float maxSpeedBoost = 1.3f;
-	float speedBoost = 1f;
+	[HideInInspector] public float speedBoost = 1f;
 
 	Vector3 inputVec = Vector3.zero;
 	[SerializeField] bool debug;
@@ -87,9 +88,6 @@ public class Worm : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-		//WiggleLogic = WiggleAlternateLogic;
-		//WiggleLogic = StarwhalWiggleLogic
-		//WiggleLogic = TankWiggleLogic;
 		WiggleLogic = SkilledTankWiggleLogic;
 		initSegmentNum = segmentNum;
 
@@ -213,7 +211,7 @@ public class Worm : MonoBehaviour
 
 		GameObject segment = CreateSegment(lastSeg.position - lastSeg.up * circleDist);
 		segment.name = "Segment" + segments.Length;
-		segment.layer = LayerMask.NameToLayer("Head" + playerNum);
+		segment.layer = LayerMask.NameToLayer("Segment");
 		segment.transform.localScale = Vector3.one * lastSeg.localScale.x;
 
 		segment.GetComponent<SpringJoint2D>().connectedBody = lastSeg.GetComponent<Rigidbody2D>();
@@ -549,6 +547,8 @@ public class Worm : MonoBehaviour
 		pukeTimer = 0.0f;
 		bool ballSpawned = !spawnBall;
 
+		Vector3 initMouthScale = mouth.localScale;
+
 		GameObject pukeEffectObj = WadeUtils.Instantiate(pukeEffectPrefab, transform.position, transform.rotation);
 		mouth.GetComponent<SpriteRenderer>().sprite = openSprite;
 
@@ -621,7 +621,7 @@ public class Worm : MonoBehaviour
 		}
 
 		Destroy(pukeEffectObj);
-		mouth.localScale = Vector3.one;
+		mouth.localScale = initMouthScale;
 	
 		isPuking = false;
 	}
@@ -692,7 +692,7 @@ public class Worm : MonoBehaviour
 
 	void FixedUpdate()
 	{
-		if(WiggleLogic != null)
+		if(WiggleLogic != null && canMoveTimer > canMoveTime)
 		{
 			WiggleLogic();
 			Movement();
@@ -703,6 +703,8 @@ public class Worm : MonoBehaviour
 		{
 			ScoreManager.instance.AddTime(playerNum);
 		}
+
+		canMoveTimer += Time.deltaTime;
 	}
 
 	public void SetMoveSpeed(float newSpeed)
@@ -804,12 +806,11 @@ public class Worm : MonoBehaviour
 			offsetAngle = 360f - offsetAngle;
 		}
 
-		//Debug.Log(offsetAngle);
 		transform.rotation = Quaternion.Lerp(transform.rotation, 
 		                                     Quaternion.Euler(0f, 0f, offsetAngle - 90f), 
 		                                     Time.deltaTime * lookSpeed);
 
-		if(Input.GetButton("Jump-P" + playerNum))
+		if(Input.GetButton("Jump-P" + playerNum + WadeUtils.platformName))
 		{
 			moveTimer = moveTime;
 		}
@@ -819,7 +820,7 @@ public class Worm : MonoBehaviour
 	{
 		transform.rotation *= Quaternion.Euler(0.0f, 0.0f, -rotSpeed * inputVec.x);
 
-		if(Input.GetButton("Jump-P" + playerNum))
+		if(Input.GetButton("Jump-P" + playerNum + WadeUtils.platformName))
 		{
 			moveTimer = moveTime;
 		}
@@ -829,7 +830,7 @@ public class Worm : MonoBehaviour
 	{
 		transform.rotation *= Quaternion.Euler(0.0f, 0.0f, -rotSpeed * inputVec.x);
 		
-		if(Input.GetButton("Jump-P" + playerNum))
+		if(Input.GetButton("Jump-P" + playerNum + WadeUtils.platformName))
 		{
 			moveTimer = moveTime;
 		}
@@ -859,8 +860,6 @@ public class Worm : MonoBehaviour
 
 		if(speedBoost > 1f)
 		{
-			Debug.Log(speedBoost);
-
 			speedBoost -= Time.fixedDeltaTime;
 			Mathf.Clamp(speedBoost, 1f, Mathf.Infinity);
 		}

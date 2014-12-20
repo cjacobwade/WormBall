@@ -7,19 +7,25 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 	public Text[] team1TimeText;
 	public Text[] team2TimeText;
 
+	public GameObject suddenDeathText;
+
 	float team1Time = 0.0f;
 	float team2Time = 0.0f;
 	
 	[SerializeField] float totalGameTime = 30.0f;
 	float gameTime = 0.0f;
+
 	public DrawCircle drawCircle;
+	[SerializeField] float MaxCircleSize = 11.5f;
+	[SerializeField] float circlePulseSpeed = 0.7f;
+	[SerializeField] float circleReturnSpeed = 2f;
+
+	bool suddenDeath = false;
 
 	void Awake()
 	{
 		gameTime = totalGameTime;
 	}
-
-
 
 	void Update()
 	{
@@ -27,7 +33,28 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 		{
 			if(gameTime <= 0.0f)
 			{
-				GameManager.instance.EndGame(team1Time > team2Time ? 1 : 2);
+				if(Mathf.Abs(team1Time - team2Time) > 0.1f)
+				{
+					GameManager.instance.EndGame(team1Time > team2Time ? 1 : 2);
+					suddenDeathText.SetActive(false);
+					drawCircle.ReturnToSize(circleReturnSpeed);
+					suddenDeath = false;
+				}
+				else if(!suddenDeath)
+				{
+					team1TimeText[0].enabled = false;
+					team1TimeText[1].enabled = false;
+
+					team2TimeText[0].enabled = false;
+					team2TimeText[1].enabled = false;
+
+					suddenDeathText.SetActive(true);
+					drawCircle.fillAmount = 1f;
+
+					drawCircle.PingPongSize(MaxCircleSize, circlePulseSpeed);
+
+					suddenDeath = true;
+				}
 			}
 			else
 			{
@@ -48,6 +75,12 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 
 		team2TimeText[0].text = ((int)team2Time).ToString("0");
 		team2TimeText[1].text = Mathf.Clamp(team2Time % 1.0f, 0.0f, 0.9f).ToString(".0");
+
+		team1TimeText[0].enabled = true;
+		team1TimeText[1].enabled = true;
+		
+		team2TimeText[0].enabled = true;
+		team2TimeText[1].enabled = true;
 	}
 
 	public void ResetTimer()

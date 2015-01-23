@@ -33,7 +33,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 	[SerializeField] GameObject endGameObj;
 	[SerializeField] WormText endWinnerText;
 
-	[SerializeField] Color[] colorOptions;
+	public Color[] colorOptions;
 	Color team1Color;
 	Color team2Color;
 

@@ -28,7 +28,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 	public GameObject ballPrefab;
 
 	[SerializeField] GameObject menuObj;
-	[SerializeField] GameObject characterSelectObj;
+	[SerializeField] CharacterSelect characterSelect;
 	[SerializeField] GameObject gameObj;
 	[SerializeField] GameObject endGameObj;
 	[SerializeField] WormText endWinnerText;
@@ -65,21 +65,27 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		if(gameState == GameState.Menu)
 		{
-			for(int i = 0; i < 4; i++)
+			if(Input.anyKeyDown)
 			{
-				if(Input.GetAxis("Horizontal_P" + (i + 1)) < -0.1f)
-				{
-					StartGame(true);
-				}
-				else if(Input.GetAxis("Horizontal_P" + (i + 1)) > 0.1f)
-				{
-					StartGame(false);
-				}
+				ChangeGameState(GameState.CharacterSelect);
 			}
 		}
 		else if(Input.GetKeyDown(KeyCode.Escape))
 		{
 			ChangeGameState(GameState.Menu);
+		}
+
+		if(gameState == GameState.CharacterSelect)
+		{
+			for(int i = 0; i < 8; i++)
+			{
+				if(characterSelect.playerInfos[i].joined && characterSelect.joinedPlayers > 1 &&
+				   characterSelect.playerInfos[i].inputTimer > characterSelect.inputTime &&
+				   Input.GetButtonDown("Start" + WadeUtils.platformName))
+				{
+					StartGame(false);
+				}
+			}
 		}
 
 		if(gameState == GameState.EndGame)
@@ -177,13 +183,13 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	void CharacterSelectSetup()
 	{
-		characterSelectObj.SetActive(true);
+		characterSelect.gameObject.SetActive(true);
 		// Fade in pre-game music
 	}
 
 	void CharacterSelectCleanup()
 	{
-		characterSelectObj.SetActive(false);
+		characterSelect.gameObject.SetActive(false);
 		// Fade out pre-game music
 	}
 
@@ -191,10 +197,8 @@ public class GameManager : SingletonBehaviour<GameManager>
 	{
 		gameObj.SetActive(true);
 
-		List<Color> colors = colorOptions.ToList();
-		team1Color = colors[Random.Range(0, colors.Count - 1)];
-		colors.Remove(team1Color);
-		team2Color = colors[Random.Range(0, colors.Count - 1)];
+		team1Color = colorOptions[characterSelect.teamColorIndices[0]];
+		team2Color = colorOptions[characterSelect.teamColorIndices[1]];
 
 		ScoreManager sm = ScoreManager.instance;
 		sm.team1TimeText.ToList().ForEach( text => text.color = team1Color);
@@ -256,7 +260,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	void FourPlayer()
 	{
-		for(int i = 0; i < 6; i++)
+		for(int i = 0; i < 8; i++)
 		{
 			Vector3 rand = Random.insideUnitSphere * 0.4f;
 			rand += Vector3.one * 0.6f;
@@ -264,23 +268,23 @@ public class GameManager : SingletonBehaviour<GameManager>
 			Vector3 spawnPos;
 			Quaternion spawnRot;
 			bool lookUp = true;
-			if(i < 3)
+			if(i < 4)
 			{
 				spawnRot = Quaternion.identity;
-				spawnPos = transform.position - Vector3.right * 5.0f * (i + 1);
+				spawnPos = transform.position - Vector3.right * 4.0f * (i + 1);
 				spawnPos += Vector3.up * 3.0f;
 			}
 			else
 			{
 				lookUp = false;
 				spawnRot = Quaternion.Euler(0.0f, 0.0f, 180.0f);
-				spawnPos = transform.position + Vector3.right * 5.0f * (i - 1);
+				spawnPos = transform.position + Vector3.right * 4.0f * (i - 3);
 				spawnPos -= Vector3.up * 3.0f;
 			}
 
-			Color spawnColor = i < 3 ? team1Color : team2Color;
+			Color spawnColor = i < 4 ? team1Color : team2Color;
 
-			if(i % 3 != 0)
+			if(i % 4 != 0)
 			{
 				spawnColor += new Color(0.25f, 0.25f, 0.25f, 0.0f);
 			}

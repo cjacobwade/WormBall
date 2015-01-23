@@ -20,7 +20,7 @@ public class PlayerInfo
 
 public class CharacterSelect : MonoBehaviour 
 {
-	[SerializeField] PlayerInfo[] playerInfos;
+	public PlayerInfo[] playerInfos;
 
 	[SerializeField] Sprite defaultPlayerSprite;
 	Color defaultSpriteColor;
@@ -30,9 +30,10 @@ public class CharacterSelect : MonoBehaviour
 	
 	List<int> openTeamColorIndices = new List<int>(); // available team colors
 
-	int[] teamColorIndices = new int[2]; // colorIndex for each team
+	public int[] teamColorIndices = new int[2]; // colorIndex for each team
 
-	[SerializeField] float inputTime;
+	public float inputTime;
+	public int joinedPlayers = 0;
 
 	void Awake()
 	{
@@ -60,7 +61,6 @@ public class CharacterSelect : MonoBehaviour
 				// Join Game
 				if(!playerInfos[i].joined && Input.GetButtonDown("Propel_P" + (i + 1) + WadeUtils.platformName))
 				{
-					Debug.Log("Player Join");
 					PlayerJoinGame(i);
 					playerInfos[i].inputTimer = 0f;
 				}
@@ -68,7 +68,6 @@ public class CharacterSelect : MonoBehaviour
 				// Leave Game
 				if(playerInfos[i].joined && Input.GetButtonDown("Leave_P" + (i + 1) + WadeUtils.platformName))
 				{
-					Debug.Log("Player Leave");
 					PlayerLeaveGame(i);
 					playerInfos[i].inputTimer = 0f;
 				}
@@ -77,7 +76,6 @@ public class CharacterSelect : MonoBehaviour
 				float scrollInput = Input.GetAxis("Horizontal_P" + (i + 1));
 				if(playerInfos[i].joined && Mathf.Abs(scrollInput) > WadeUtils.SMALLNUMBER)
 				{
-					Debug.Log("Player Change Sprite");
 					PlayerChangeSprite(i, scrollInput);
 					playerInfos[i].inputTimer = 0f;
 				}
@@ -86,7 +84,6 @@ public class CharacterSelect : MonoBehaviour
 				float bumperInput = Input.GetAxis("Bumper_P" + (i + 1) + WadeUtils.platformName);
 				if(playerInfos[i].joined & Mathf.Abs(bumperInput) > WadeUtils.SMALLNUMBER)
 				{
-					Debug.Log("Change Team Color");
 					ChangeTeamColor(i < 4 ? 0 : 1, bumperInput);
 					playerInfos[i].inputTimer = 0f;
 				}
@@ -108,6 +105,8 @@ public class CharacterSelect : MonoBehaviour
 		playerInfos[playerIndex].image.sprite = playerSprites[firstSpriteIndex];
 		playerInfos[playerIndex].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
 		teamOpenSpriteIndices[teamIndex].RemoveAt(0);
+
+		joinedPlayers++;
 	}
 
 	void PlayerLeaveGame(int playerIndex)
@@ -118,6 +117,8 @@ public class CharacterSelect : MonoBehaviour
 		teamOpenSpriteIndices[playerInfo.teamIndex].Add(playerInfo.spriteIndex);
 		playerInfo.image.sprite = defaultPlayerSprite;
 		playerInfo.image.color = defaultSpriteColor;
+
+		joinedPlayers--;
 	}
 
 	void CheckAvailableSprites()
@@ -168,18 +169,11 @@ public class CharacterSelect : MonoBehaviour
 			
 			if(scrollAmount > 0f)
 			{
-				Debug.Log(i);
-				//Debug.Log("Looking for larger sprite index: " + teamOpenSpriteIndices[teamIndex][i] + " vs. " + playerInfos[playerIndex].spriteIndex);
-
 				if(teamOpenSpriteIndices[teamIndex][i] != playerInfos[playerIndex].spriteIndex)
 				{
-					Debug.Log("In count: " + teamOpenSpriteIndices[teamIndex].Count);
-
 					teamOpenSpriteIndices[teamIndex].Add(playerInfos[playerIndex].spriteIndex);
 					playerInfos[playerIndex].spriteIndex = teamOpenSpriteIndices[teamIndex][i];
 					teamOpenSpriteIndices[teamIndex].Remove(teamOpenSpriteIndices[teamIndex][i]);
-
-					Debug.Log("Out count: " + teamOpenSpriteIndices[teamIndex].Count);
 
 					playerInfos[playerIndex].UpdateSprite(playerSprites);
 					break;

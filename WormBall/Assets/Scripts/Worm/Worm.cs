@@ -160,7 +160,7 @@ public class Worm : MonoBehaviour
 			else if(i <= 1)
 			{
 				//Debug.Log("Segment" + playerNum.ToString());
-				segment.layer = LayerMask.NameToLayer("Head" + playerNum.ToString());
+				segment.layer = LayerMask.NameToLayer("Head" + playerNum);
 			}
 			else
 			{
@@ -655,7 +655,7 @@ public class Worm : MonoBehaviour
 			Puke (false);
 		}
 
-		inputVec = new Vector3(Input.GetAxis("Horizontal-P" + playerNum), Input.GetAxis("Vertical-P" + playerNum), 0.0f);
+		inputVec = new Vector3(Input.GetAxis("Horizontal_P" + playerNum), 0f, 0f);
 
 		if(segmentNum < maxSegments && Input.GetKeyDown(KeyCode.Equals))
 		{
@@ -810,7 +810,7 @@ public class Worm : MonoBehaviour
 		                                     Quaternion.Euler(0f, 0f, offsetAngle - 90f), 
 		                                     Time.deltaTime * lookSpeed);
 
-		if(Input.GetButton("Jump-P" + playerNum + WadeUtils.platformName))
+		if(Input.GetButton("Propel_P" + playerNum + WadeUtils.platformName))
 		{
 			moveTimer = moveTime;
 		}
@@ -820,7 +820,7 @@ public class Worm : MonoBehaviour
 	{
 		transform.rotation *= Quaternion.Euler(0.0f, 0.0f, -rotSpeed * inputVec.x);
 
-		if(Input.GetButton("Jump-P" + playerNum + WadeUtils.platformName))
+		if(Input.GetButton("Propel_P" + playerNum + WadeUtils.platformName))
 		{
 			moveTimer = moveTime;
 		}
@@ -830,7 +830,7 @@ public class Worm : MonoBehaviour
 	{
 		transform.rotation *= Quaternion.Euler(0.0f, 0.0f, -rotSpeed * inputVec.x);
 		
-		if(Input.GetButton("Jump-P" + playerNum + WadeUtils.platformName))
+		if(Input.GetButton("Propel_P" + playerNum + WadeUtils.platformName))
 		{
 			moveTimer = moveTime;
 		}

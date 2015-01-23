@@ -67,14 +67,14 @@ public class GameManager : SingletonBehaviour<GameManager>
 		{
 			for(int i = 0; i < 4; i++)
 			{
-//				if(Input.GetAxis("Horizontal-P" + (i + 1)) < -0.1f)
-//				{
-//					StartGame(true);
-//				}
-//				else if(Input.GetAxis("Horizontal-P" + (i + 1)) > 0.1f)
-//				{
-//					StartGame(false);
-//				}
+				if(Input.GetAxis("Horizontal-P" + (i + 1)) < -0.1f)
+				{
+					StartGame(true);
+				}
+				else if(Input.GetAxis("Horizontal-P" + (i + 1)) > 0.1f)
+				{
+					StartGame(false);
+				}
 			}
 		}
 		else if(Input.GetKeyDown(KeyCode.Escape))

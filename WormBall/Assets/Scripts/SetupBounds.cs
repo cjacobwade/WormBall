@@ -38,7 +38,7 @@ public class SetupBounds : SingletonBehaviour<SetupBounds>
 		leftBounds.GetComponent<Rigidbody2D>().isKinematic = true;
 		BoxCollider2D leftBox = leftBounds.GetComponent<BoxCollider2D>();
 		leftBox.size = new Vector2(leftBox.bounds.size.x, worldMax.y * 2.0f);
-		leftBox.offset = new Vector2(leftBox.offset.x - 0.5f, leftBox.offset.y);
+		leftBox.center = new Vector2(leftBox.center.x - 0.5f, leftBox.center.y);
 	}
 		
 	void SetupRight()
@@ -49,7 +49,7 @@ public class SetupBounds : SingletonBehaviour<SetupBounds>
 		rightBounds.GetComponent<Rigidbody2D>().isKinematic = true;
 		BoxCollider2D rightBox = rightBounds.GetComponent<BoxCollider2D>();
 		rightBox.size = new Vector2(rightBox.bounds.size.x, worldMax.y * 2.0f);
-		rightBox.offset = new Vector2(rightBox.offset.x + 0.5f, rightBox.offset.y);
+		rightBox.center = new Vector2(rightBox.center.x + 0.5f, rightBox.center.y);
 	}
 
 	void SetupTop()
@@ -60,7 +60,7 @@ public class SetupBounds : SingletonBehaviour<SetupBounds>
 		topBounds.GetComponent<Rigidbody2D>().isKinematic = true;
 		BoxCollider2D topBox = topBounds.GetComponent<BoxCollider2D>();
 		topBox.size = new Vector2(worldMax.x * 2.0f, topBox.bounds.size.y);
-		topBox.offset = new Vector2(topBox.offset.x, topBox.offset.y + 0.5f);
+		topBox.center = new Vector2(topBox.center.x, topBox.center.y + 0.5f);
 	}
 
 	void SetupBottom()
@@ -71,7 +71,7 @@ public class SetupBounds : SingletonBehaviour<SetupBounds>
 		bottomBounds.GetComponent<Rigidbody2D>().isKinematic = true;
 		BoxCollider2D bottomBox = bottomBounds.GetComponent<BoxCollider2D>();
 		bottomBox.size = new Vector2(worldMax.x * 2.0f, bottomBox.bounds.size.y);
-		bottomBox.offset = new Vector2(bottomBox.offset.x, bottomBox.offset.y - 0.5f);
+		bottomBox.center = new Vector2(bottomBox.center.x, bottomBox.center.y - 0.5f);
 	}
 
 	void SetupCornerColliders()
@@ -115,7 +115,7 @@ public class SetupBounds : SingletonBehaviour<SetupBounds>
 		BoxCollider2D ballBox = ballContainer.GetComponent<BoxCollider2D>();
 		ballBox.isTrigger = true;
 		ballBox.size = new Vector2(worldMax.x * 2.0f, worldMax.y * 2.0f);
-		ballBox.offset = Vector3.zero;
+		ballBox.center = Vector3.zero;
 	}
 
 	public bool IsInBounds(Vector3 pos)

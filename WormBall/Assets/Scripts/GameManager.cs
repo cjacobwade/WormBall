@@ -112,6 +112,18 @@ public class GameManager : SingletonBehaviour<GameManager>
 		ChangeGameState(GameState.Game);
 	}
 
+	public void DestroyAllBalls()
+	{
+		Ball[] balls = GameObject.FindObjectsOfType<Ball>();
+		foreach(Ball ball in balls)
+		{
+			if(ball)
+			{
+				Destroy(ball.gameObject);
+			}
+		}
+	}
+
 	public void ResetBall()
 	{
 		Ball[] balls = GameObject.FindObjectsOfType<Ball>();
@@ -185,6 +197,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 	void CharacterSelectSetup()
 	{
 		characterSelect.gameObject.SetActive(true);
+		DestroyAllBalls();
 		// Fade in pre-game music
 	}
 
@@ -216,7 +229,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 //		{
 //			FourPlayer();
 //		}
-
+		ResetBall();
 		SpawnPlayers();
 
 		// Enable score manager

@@ -8,15 +8,18 @@ using System.Linq;
 public class PlayerInfo
 {
 	public Image image;
-	public int spriteIndex;
+	public int texIndex;
 	public int playerIndex;
 	public int teamIndex;
 	public bool joined;
 	public float inputTimer = 1000f;
 
-	public void UpdateSprite(Sprite[] spriteArr)
+	public void UpdateSprite(Texture2D[] texArr)
 	{
-		image.sprite = spriteArr[spriteIndex];
+		Texture2D spriteTex = texArr[texIndex];
+		image.sprite = Sprite.Create(spriteTex, 
+		                             new Rect(0f, 0f, spriteTex.width, spriteTex.height),
+		                             new Vector2(0.5f, 0.5f));
 	}
 }
 
@@ -24,10 +27,10 @@ public class CharacterSelect : MonoBehaviour
 {
 	public PlayerInfo[] playerInfos;
 
-	[SerializeField] Sprite defaultPlayerSprite;
+	[SerializeField] Texture2D defaultPlayerTex;
 	Color defaultSpriteColor;
 
-	[SerializeField] Sprite[] playerSprites;
+	[SerializeField] Texture2D[] playerTextures;
 	List<int>[] teamOpenSpriteIndices = new List<int>[2];
 	
 	List<int> openTeamColorIndices = new List<int>(); // available team colors
@@ -109,8 +112,14 @@ public class CharacterSelect : MonoBehaviour
 		int teamIndex = playerInfos[playerIndex].teamIndex;
 		int firstSpriteIndex = teamOpenSpriteIndices[teamIndex][0];
 
-		playerInfos[playerIndex].image.sprite = playerSprites[firstSpriteIndex];
+		Texture2D spriteTex = playerTextures[firstSpriteIndex];
+		playerInfos[playerIndex].texIndex = firstSpriteIndex;
+		playerInfos[playerIndex].image.sprite = Sprite.Create(spriteTex, 
+		                                                      new Rect(0f, 0f, spriteTex.width, spriteTex.height),
+		                                                      new Vector2(0.5f, 0.5f));
 		playerInfos[playerIndex].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
+
+
 		teamOpenSpriteIndices[teamIndex].RemoveAt(0);
 	}
 
@@ -119,8 +128,13 @@ public class CharacterSelect : MonoBehaviour
 		PlayerInfo playerInfo = playerInfos[playerIndex];
 
 		playerInfo.joined = false;
-		teamOpenSpriteIndices[playerInfo.teamIndex].Add(playerInfo.spriteIndex);
-		playerInfo.image.sprite = defaultPlayerSprite;
+		teamOpenSpriteIndices[playerInfo.teamIndex].Add(playerInfo.texIndex);
+
+		Texture2D spriteTex = defaultPlayerTex;
+		playerInfo.image.sprite = Sprite.Create(spriteTex, 
+		                                        new Rect(0f, 0f, spriteTex.width, spriteTex.height),
+		                                        new Vector2(0.5f, 0.5f));
+
 		playerInfo.image.color = defaultSpriteColor;
 	}
 
@@ -137,6 +151,11 @@ public class CharacterSelect : MonoBehaviour
 		}
 		
 		return outPlayerInfos.ToArray();
+	}
+
+	public Texture2D GetPlayerTex(int texIndex)
+	{
+		return playerTextures[texIndex];
 	}
 
 	public PlayerInfo[] GetTeamPlayerInfos(int teamIndex)
@@ -208,14 +227,14 @@ public class CharacterSelect : MonoBehaviour
 		{
 			teamOpenSpriteIndices[i].Clear();
 
-			for(int j = 0; j < playerSprites.Length; j++)
+			for(int j = 0; j < playerTextures.Length; j++)
 			{
 				bool spriteUnused = true;
 
 				foreach(PlayerInfo playerInfo in playerInfos)
 				{
 					if(playerInfo.teamIndex == i && playerInfo.joined && 
-					   playerInfo.image.sprite == playerSprites[j])
+					   playerInfo.image.sprite.texture == playerTextures[j])
 					{
 						spriteUnused = false;
 					}
@@ -236,7 +255,7 @@ public class CharacterSelect : MonoBehaviour
 		int teamIndex = playerInfos[playerIndex].teamIndex;
 		teamOpenSpriteIndices[teamIndex].Sort();
 
-		int i = playerInfos[playerIndex].spriteIndex;
+		int i = playerInfos[playerIndex].texIndex;
 		while(true)
 		{
 			if(i > teamOpenSpriteIndices[teamIndex].Count - 1)
@@ -250,13 +269,13 @@ public class CharacterSelect : MonoBehaviour
 			
 			if(scrollAmount > 0f)
 			{
-				if(teamOpenSpriteIndices[teamIndex][i] != playerInfos[playerIndex].spriteIndex)
+				if(teamOpenSpriteIndices[teamIndex][i] != playerInfos[playerIndex].texIndex)
 				{
-					teamOpenSpriteIndices[teamIndex].Add(playerInfos[playerIndex].spriteIndex);
-					playerInfos[playerIndex].spriteIndex = teamOpenSpriteIndices[teamIndex][i];
+					teamOpenSpriteIndices[teamIndex].Add(playerInfos[playerIndex].texIndex);
+					playerInfos[playerIndex].texIndex = teamOpenSpriteIndices[teamIndex][i];
 					teamOpenSpriteIndices[teamIndex].Remove(teamOpenSpriteIndices[teamIndex][i]);
 
-					playerInfos[playerIndex].UpdateSprite(playerSprites);
+					playerInfos[playerIndex].UpdateSprite(playerTextures);
 					break;
 				}
 
@@ -268,13 +287,13 @@ public class CharacterSelect : MonoBehaviour
 			}
 			else
 			{
-				if(teamOpenSpriteIndices[teamIndex][i] != playerInfos[playerIndex].spriteIndex)
+				if(teamOpenSpriteIndices[teamIndex][i] != playerInfos[playerIndex].texIndex)
 				{
-					teamOpenSpriteIndices[teamIndex].Add(playerInfos[playerIndex].spriteIndex);
-					playerInfos[playerIndex].spriteIndex = teamOpenSpriteIndices[teamIndex][i];
+					teamOpenSpriteIndices[teamIndex].Add(playerInfos[playerIndex].texIndex);
+					playerInfos[playerIndex].texIndex = teamOpenSpriteIndices[teamIndex][i];
 					teamOpenSpriteIndices[teamIndex].Remove(teamOpenSpriteIndices[teamIndex][i]);
 
-					playerInfos[playerIndex].UpdateSprite(playerSprites);
+					playerInfos[playerIndex].UpdateSprite(playerTextures);
 					break;
 				}
 				

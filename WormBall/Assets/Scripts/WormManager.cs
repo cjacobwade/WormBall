@@ -44,29 +44,19 @@ public class WormManager : SingletonBehaviour<WormManager>
 			{
 				int wormNum = wormObjs[i].GetComponentInChildren<Worm>().playerNum;
 
-				if(GameManager.instance.twoPlayer)
+				if(teamNum == 1 && wormNum <= 4)
 				{
-					if(teamNum == wormNum)
-					{
-						Destroy(wormObjs[i]);
-					}
+					Destroy(wormObjs[i]);
 				}
-				else
+				else if(teamNum == 2 && wormNum > 4)
 				{
-					if(teamNum == 1 && wormNum < 3)
-					{
-						Destroy(wormObjs[i]);
-					}
-					else if(teamNum == 2 && wormNum > 2)
-					{
-						Destroy(wormObjs[i]);
-					}
+					Destroy(wormObjs[i]);
 				}
 			}
 		}
 	}
 
-	public Worm CreateWorm(Vector3 pos, bool lookUp, int playerNum, Color color)
+	public Worm CreateWorm(Vector3 pos, bool lookUp, int playerNum, Color color, Texture2D tex)
 	{
 		Quaternion spawnRot = lookUp ? Quaternion.identity : Quaternion.Euler(0.0f, 0.0f, 180.0f);
 		GameObject wormObj = WadeUtils.Instantiate(wormPrefab, pos, spawnRot);
@@ -74,6 +64,7 @@ public class WormManager : SingletonBehaviour<WormManager>
 
 		Worm worm = wormObj.GetComponentInChildren<Worm>();
 		worm.playerNum = playerNum;
+		worm.GetComponent<Renderer>().material.SetTexture("_MainTex", tex);
 		worm.GetComponent<Renderer>().material.SetColor("_MainTint", color);
 
 		return worm;

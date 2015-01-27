@@ -220,97 +220,12 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		sm.ResetScore();
 		sm.ResetTimer();
-//
-//		if(twoPlayer)
-//		{
-//			TwoPlayer();
-//		}
-//		else
-//		{
-//			FourPlayer();
-//		}
+
 		ResetBall();
 		SpawnPlayers();
 
-		// Enable score manager
-
-		// Game start choreo
-
 		// Spawn players
 		// Fade in game music
-	}
-
-	void TwoPlayer()
-	{
-		for(int i = 0; i < 2; i++)
-		{
-			Vector3 rand = Random.insideUnitSphere * 0.4f;
-			rand += Vector3.one * 0.6f;
-			
-			Vector3 spawnPos;
-			Quaternion spawnRot;
-			bool lookUp = true;
-			if(i < 1)
-			{
-				spawnRot = Quaternion.identity;
-				spawnPos = transform.position - Vector3.right * 5.0f;
-				spawnPos += Vector3.up * 3.0f;
-			}
-			else
-			{
-				lookUp = false;
-				spawnRot = Quaternion.Euler(0.0f, 0.0f, 180.0f);
-				spawnPos = transform.position + Vector3.right * 5.0f;
-				spawnPos -= Vector3.up * 3.0f;
-			}
-
-			Color spawnColor = i < 1 ? team1Color : team2Color;
-
-			GameObject wormObj = WormManager.instance.CreateWorm(spawnPos, lookUp, i + 1, spawnColor).gameObject;
-			wormObj.transform.rotation = spawnRot;
-			wormObj.transform.parent.name = "P" + (i + 1);
-			wormObj.name = "Worm";
-			wormObj.GetComponentInChildren<SpriteRenderer>().color = spawnColor - new Color(0.15f, 0.15f, 0.15f, 0.0f);
-		}
-	}
-
-	void FourPlayer()
-	{
-		for(int i = 0; i < 8; i++)
-		{
-			Vector3 rand = Random.insideUnitSphere * 0.4f;
-			rand += Vector3.one * 0.6f;
-			
-			Vector3 spawnPos;
-			Quaternion spawnRot;
-			bool lookUp = true;
-			if(i < 4)
-			{
-				spawnRot = Quaternion.identity;
-				spawnPos = transform.position - Vector3.right * 4.0f * (i + 1);
-				spawnPos += Vector3.up * 3.0f;
-			}
-			else
-			{
-				lookUp = false;
-				spawnRot = Quaternion.Euler(0.0f, 0.0f, 180.0f);
-				spawnPos = transform.position + Vector3.right * 4.0f * (i - 3);
-				spawnPos -= Vector3.up * 3.0f;
-			}
-
-			Color spawnColor = i < 4 ? team1Color : team2Color;
-
-			if(i % 4 != 0)
-			{
-				spawnColor += new Color(0.25f, 0.25f, 0.25f, 0.0f);
-			}
-
-			GameObject wormObj = WormManager.instance.CreateWorm(spawnPos, lookUp, i + 1, spawnColor).gameObject;
-			wormObj.transform.rotation = spawnRot;
-			wormObj.transform.parent.name = "P" + (i + 1);
-			wormObj.name = "Worm";
-			wormObj.GetComponentInChildren<SpriteRenderer>().color = spawnColor - new Color(0.15f, 0.15f, 0.15f, 0.0f);
-		}
 	}
 
 	void SpawnPlayers()
@@ -339,8 +254,13 @@ public class GameManager : SingletonBehaviour<GameManager>
 			spawnPos += (team == 0) ? Vector3.up * 3f : -Vector3.up * 3f;
 			
 			Color spawnColor = (team == 0) ? team1Color : team2Color;
+			Texture2D playerTex = characterSelect.GetPlayerTex(playerInfos[i].texIndex);
 		
-			GameObject wormObj = WormManager.instance.CreateWorm(spawnPos, lookUp, playerNum, spawnColor).gameObject;
+			GameObject wormObj = WormManager.instance.CreateWorm(spawnPos, 
+			                                                     lookUp, 
+			                                                     playerNum, 
+			                                                     spawnColor, 
+			                                                     playerTex).gameObject;
 			wormObj.transform.rotation = spawnRot;
 			wormObj.transform.parent.name = "P" + playerNum;
 			wormObj.name = "Worm";

@@ -45,6 +45,8 @@ public class GameManager : SingletonBehaviour<GameManager>
 		prevState = gameState;
 
 		UpdateState();
+
+
 	}
 
 	void Update () 
@@ -72,18 +74,18 @@ public class GameManager : SingletonBehaviour<GameManager>
 		}
 		else if(Input.GetKeyDown(KeyCode.Escape))
 		{
-			ChangeGameState(GameState.Menu);
+			Application.LoadLevel(Application.loadedLevel);
 		}
 
 		if(gameState == GameState.CharacterSelect)
 		{
 			for(int i = 0; i < 8; i++)
 			{
-				if(characterSelect.playerInfos[i].joined && characterSelect.joinedPlayers > 1 &&
+				if(characterSelect.playerInfos[i].joined && characterSelect.IsReadyToPlay() &&
 				   characterSelect.playerInfos[i].inputTimer > characterSelect.inputTime &&
 				   Input.GetButtonDown("Start" + WadeUtils.platformName))
 				{
-					StartGame(false);
+					StartGame();
 				}
 			}
 		}
@@ -105,9 +107,8 @@ public class GameManager : SingletonBehaviour<GameManager>
 		}
 	}
 
-	public void StartGame(bool inTwoPlayer)
+	public void StartGame()
 	{
-		twoPlayer = inTwoPlayer;
 		ChangeGameState(GameState.Game);
 	}
 
@@ -206,15 +207,17 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		sm.ResetScore();
 		sm.ResetTimer();
+//
+//		if(twoPlayer)
+//		{
+//			TwoPlayer();
+//		}
+//		else
+//		{
+//			FourPlayer();
+//		}
 
-		if(twoPlayer)
-		{
-			TwoPlayer();
-		}
-		else
-		{
-			FourPlayer();
-		}
+		SpawnPlayers();
 
 		// Enable score manager
 
@@ -294,6 +297,41 @@ public class GameManager : SingletonBehaviour<GameManager>
 			wormObj.transform.parent.name = "P" + (i + 1);
 			wormObj.name = "Worm";
 			wormObj.GetComponentInChildren<SpriteRenderer>().color = spawnColor - new Color(0.15f, 0.15f, 0.15f, 0.0f);
+		}
+	}
+
+	void SpawnPlayers()
+	{
+	 	PlayerInfo[] playerInfos = characterSelect.GetPlayerInfos();
+
+		int team = 0;
+		int playerNum = 0;
+		int team1Count = 0;
+		int team2Count = 0;
+		for(int i = 0; i < playerInfos.Length; i++)
+		{
+			playerNum = playerInfos[i].playerIndex;
+			team = playerInfos[i].teamIndex;
+
+			if(team == 0)
+				team1Count++;
+			else
+				team2Count++;
+
+			bool lookUp = (team == 0);
+			Quaternion spawnRot = team == 0 ? Quaternion.identity : Quaternion.Euler(0f, 0f, 180f);
+
+			Vector3 spawnPos = transform.position;
+			spawnPos += (team == 0) ? -Vector3.right * 4f * team1Count : Vector3.right * 4f * (team2Count);
+			spawnPos += (team == 0) ? Vector3.up * 3f : -Vector3.up * 3f;
+			
+			Color spawnColor = (team == 0) ? team1Color : team2Color;
+		
+			GameObject wormObj = WormManager.instance.CreateWorm(spawnPos, lookUp, playerNum, spawnColor).gameObject;
+			wormObj.transform.rotation = spawnRot;
+			wormObj.transform.parent.name = "P" + playerNum;
+			wormObj.name = "Worm";
+			wormObj.GetComponentInChildren<SpriteRenderer>().color = spawnColor;
 		}
 	}
 

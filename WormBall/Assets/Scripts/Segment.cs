@@ -14,19 +14,19 @@ public class Segment : MonoBehaviour
 
 	void Update () 
 	{
-		if(sb.IsInBounds(transform.position))
-		{
-			foreach(Collider2D col in cols)
-			{
-				col.enabled = true;
-			}
-		}
-		else
-		{
-			foreach(Collider2D col in cols)
-			{
-				col.enabled = false;
-			}
-		}
+//		if(sb.IsInBounds(transform.position))
+//		{
+//			foreach(Collider2D col in cols)
+//			{
+//				col.enabled = true;
+//			}
+//		}
+//		else
+//		{
+//			foreach(Collider2D col in cols)
+//			{
+//				col.enabled = false;
+//			}
+//		}
 	}
 }

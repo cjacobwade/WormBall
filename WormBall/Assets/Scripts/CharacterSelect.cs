@@ -2,12 +2,14 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 [System.Serializable]
 public class PlayerInfo
 {
 	public Image image;
 	public int spriteIndex;
+	public int playerIndex;
 	public int teamIndex;
 	public bool joined;
 	public float inputTimer = 1000f;
@@ -33,10 +35,14 @@ public class CharacterSelect : MonoBehaviour
 	public int[] teamColorIndices = new int[2]; // colorIndex for each team
 
 	public float inputTime;
-	public int joinedPlayers = 0;
 
 	void Awake()
 	{
+		if(playerInfos.Length < 8)
+		{
+			Debug.LogError("Player Infos setup incorrectly. There should be 8 total.");
+		}
+
 		defaultSpriteColor = playerInfos[0].image.color;
 
 		for(int i = 0; i < 2; i++)
@@ -47,6 +53,7 @@ public class CharacterSelect : MonoBehaviour
 
 		for(int i = 0; i < 8; i++)
 		{
+			playerInfos[i].playerIndex = i + 1;
 			playerInfos[i].joined = false;
 			playerInfos[i].teamIndex = i < 4 ? 0 : 1;
 		}
@@ -105,8 +112,6 @@ public class CharacterSelect : MonoBehaviour
 		playerInfos[playerIndex].image.sprite = playerSprites[firstSpriteIndex];
 		playerInfos[playerIndex].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
 		teamOpenSpriteIndices[teamIndex].RemoveAt(0);
-
-		joinedPlayers++;
 	}
 
 	void PlayerLeaveGame(int playerIndex)
@@ -117,8 +122,84 @@ public class CharacterSelect : MonoBehaviour
 		teamOpenSpriteIndices[playerInfo.teamIndex].Add(playerInfo.spriteIndex);
 		playerInfo.image.sprite = defaultPlayerSprite;
 		playerInfo.image.color = defaultSpriteColor;
+	}
 
-		joinedPlayers--;
+	public PlayerInfo[] GetPlayerInfos()
+	{
+		List<PlayerInfo> outPlayerInfos = new List<PlayerInfo>();
+		
+		foreach(PlayerInfo playerInfo in playerInfos)
+		{
+			if(playerInfo.joined)
+			{
+				outPlayerInfos.Add(playerInfo);
+			}
+		}
+		
+		return outPlayerInfos.ToArray();
+	}
+
+	public PlayerInfo[] GetTeamPlayerInfos(int teamIndex)
+	{
+		List<PlayerInfo> outPlayerInfos = new List<PlayerInfo>();
+
+		foreach(PlayerInfo playerInfo in playerInfos)
+		{
+			if(playerInfo.joined && playerInfo.teamIndex == teamIndex)
+			{
+				outPlayerInfos.Add(playerInfo);
+			}
+		}
+
+		return outPlayerInfos.ToArray();
+	}
+
+	public int GetJoinedPlayerCount()
+	{
+		int playerCount = 0;
+
+		foreach(PlayerInfo playerInfo in playerInfos)
+		{
+			if(playerInfo.joined)
+			{
+				playerCount++;
+			}
+		}
+
+		return playerCount;
+	}
+
+	public int GetJoinedPlayerCountPerTeam(int teamIndex)
+	{
+		int playerCount = 0;
+
+		for(int i = teamIndex * 4; i < teamIndex * 4 + 4; i++)
+		{
+			if(playerInfos[i].joined)
+			{
+				playerCount++;
+			}
+		}
+
+		return playerCount;
+	}
+
+	public bool IsReadyToPlay()
+	{
+		return IsTeamReady(0) && IsTeamReady(1);
+	}
+
+	bool IsTeamReady(int teamIndex)
+	{
+		for(int i = teamIndex * 4; i < teamIndex * 4 + 4; i++)
+		{
+			if(playerInfos[i].joined)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	void CheckAvailableSprites()

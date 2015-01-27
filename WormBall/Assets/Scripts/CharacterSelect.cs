@@ -138,6 +138,17 @@ public class CharacterSelect : MonoBehaviour
 		playerInfo.image.color = defaultSpriteColor;
 	}
 
+	public void ForceAllPlayersLeave()
+	{
+		for(int i = 0; i < 8; i++)
+		{
+			if(playerInfos[i].joined)
+			{
+				PlayerLeaveGame(i);
+			}
+		}
+	}
+
 	public PlayerInfo[] GetPlayerInfos()
 	{
 		List<PlayerInfo> outPlayerInfos = new List<PlayerInfo>();

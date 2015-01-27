@@ -196,6 +196,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	void CharacterSelectSetup()
 	{
+		characterSelect.ForceAllPlayersLeave();
 		characterSelect.gameObject.SetActive(true);
 		DestroyAllBalls();
 		// Fade in pre-game music

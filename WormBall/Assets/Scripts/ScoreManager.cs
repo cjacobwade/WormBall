@@ -93,27 +93,13 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 	{
 		if(GameManager.instance.gameState == GameState.Game)
 		{
-			if(GameManager.instance.twoPlayer)
+			if(playerNum <= 4)
 			{
-				if(playerNum == 1)
-				{
-					AddTeam1Time();
-				}
-				else
-				{
-					AddTeam2Time();
-				}
+				AddTeam1Time();
 			}
 			else
 			{
-				if(playerNum < 3)
-				{
-					AddTeam1Time();
-				}
-				else
-				{
-					AddTeam2Time();
-				}
+				AddTeam2Time();
 			}
 		}
 	}

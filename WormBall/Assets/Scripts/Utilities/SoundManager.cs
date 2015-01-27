@@ -2,10 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class SoundManager : MonoBehaviour
+public class SoundManager : SingletonBehaviour<SoundManager>
 {
-    public static SingletonBehaviour<SoundManager> singleton = new SingletonBehaviour<SoundManager>();
-
     // Sets many sfx or songs could potentially be playing at once
     [SerializeField]
     int soundPoolSize = 3;
@@ -37,12 +35,7 @@ public class SoundManager : MonoBehaviour
 
     // Use this for initialization
     void Awake()
-    {
-		if(!destroyOnLoad)
-		{
-        	singleton.DontDestroyElseKill(this);
-		}
-
+	{
         // Setup dictionaries
         foreach (AudioClip clip in sounds)
             soundList.Add(clip.name, clip);

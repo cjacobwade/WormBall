@@ -535,6 +535,9 @@ public class Worm : MonoBehaviour
 			AddSegment();
 		}
 
+		SoundManager.instance.PlaySoundAtPosition("pop", Vector3.zero);
+		SoundManager.instance.PlaySoundAtPosition("wormvomit", Vector3.zero);
+
 		ChangeHeadSize(defaultScale);
 		ChangeAllSegmentSizes(defaultScale);
 

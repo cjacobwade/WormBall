@@ -118,6 +118,7 @@ public class CharacterSelect : MonoBehaviour
 		                                                      new Rect(0f, 0f, spriteTex.width, spriteTex.height),
 		                                                      new Vector2(0.5f, 0.5f));
 		playerInfos[playerIndex].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
+		playerInfos[playerIndex].image.transform.GetChild(0).gameObject.SetActive(false);
 
 
 		teamOpenSpriteIndices[teamIndex].RemoveAt(0);
@@ -134,6 +135,7 @@ public class CharacterSelect : MonoBehaviour
 		playerInfo.image.sprite = Sprite.Create(spriteTex, 
 		                                        new Rect(0f, 0f, spriteTex.width, spriteTex.height),
 		                                        new Vector2(0.5f, 0.5f));
+		playerInfos[playerIndex].image.transform.GetChild(0).gameObject.SetActive(true);
 
 		playerInfo.image.color = defaultSpriteColor;
 	}

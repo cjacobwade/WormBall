@@ -26,6 +26,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	[HideInInspector] public bool twoPlayer = true;
 	public GameObject ballPrefab;
+	[SerializeField] float multiBallSpawnOffset = 1f;
 
 	[SerializeField] GameObject menuObj;
 	[SerializeField] CharacterSelect characterSelect;
@@ -126,14 +127,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	public void ResetBall()
 	{
-		Ball[] balls = GameObject.FindObjectsOfType<Ball>();
-		foreach(Ball ball in balls)
-		{
-			if(ball)
-			{
-				Destroy(ball.gameObject);
-			}
-		}
+		DestroyAllBalls();
 
 		WadeUtils.Instantiate(ballPrefab);
 	}
@@ -222,7 +216,18 @@ public class GameManager : SingletonBehaviour<GameManager>
 		sm.ResetScore();
 		sm.ResetTimer();
 
-		ResetBall();
+		DestroyAllBalls();
+
+		if(characterSelect.GetPlayerInfos().Length > 5)
+		{
+			WadeUtils.Instantiate(ballPrefab, Vector3.zero + Vector3.up * multiBallSpawnOffset, Quaternion.identity);
+			WadeUtils.Instantiate(ballPrefab, Vector3.zero - Vector3.up * multiBallSpawnOffset, Quaternion.identity);
+		}
+		else
+		{
+			WadeUtils.Instantiate(ballPrefab);
+		}
+
 		SpawnPlayers();
 
 		// Spawn players
@@ -265,7 +270,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 			wormObj.transform.rotation = spawnRot;
 			wormObj.transform.parent.name = "P" + playerNum;
 			wormObj.name = "Worm";
-			wormObj.GetComponentInChildren<SpriteRenderer>().color = spawnColor;
+			wormObj.GetComponentInChildren<SpriteRenderer>().color = spawnColor - new Color( 0.2f, 0.2f, 0.2f, 0f);
 		}
 	}
 

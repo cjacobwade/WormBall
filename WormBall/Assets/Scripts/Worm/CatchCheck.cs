@@ -14,7 +14,7 @@ public class CatchCheck : MonoBehaviour
 	void OnTriggerEnter2D(Collider2D col)
 	{
 		Ball ball = col.GetComponent<Ball>();
-		if(ball && ball.canCatch)
+		if(ball && ball.canCatch && !worm.carrying)
 		{
 			worm.Catch();
 			Destroy(col.gameObject);

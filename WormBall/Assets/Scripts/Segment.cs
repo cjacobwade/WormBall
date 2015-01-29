@@ -4,29 +4,26 @@ using System.Collections;
 public class Segment : MonoBehaviour 
 {
 	SetupBounds sb;
-	Collider2D[] cols;
+	Collider2D col;
+
+	new Transform transform;
 
 	void Awake () 
 	{
+		transform = GetComponent<Transform>();
+		col = GetComponent<Collider2D>();
 		sb = SetupBounds.instance;
-		cols = GetComponents<Collider2D>();
 	}
 
 	void Update () 
 	{
-//		if(sb.IsInBounds(transform.position))
-//		{
-//			foreach(Collider2D col in cols)
-//			{
-//				col.enabled = true;
-//			}
-//		}
-//		else
-//		{
-//			foreach(Collider2D col in cols)
-//			{
-//				col.enabled = false;
-//			}
-//		}
+		if(sb.IsInBounds(transform.position))
+		{
+			col.enabled = true;
+		}
+		else
+		{
+			col.enabled = false;
+		}
 	}
 }

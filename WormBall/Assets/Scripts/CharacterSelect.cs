@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,23 +14,26 @@ public class PlayerInfo
 	public bool joined;
 	public float inputTimer = 1000f;
 
-	public void UpdateSprite(Texture2D[] texArr)
+	public void UpdateSprite(PlayerTextureInfo[] texArr)
 	{
-		Texture2D spriteTex = texArr[texIndex];
-		image.sprite = Sprite.Create(spriteTex, 
-		                             new Rect(0f, 0f, spriteTex.width, spriteTex.height),
-		                             new Vector2(0.5f, 0.5f));
+		image.sprite = texArr[texIndex].playerSprite;
 	}
+}
+
+[System.Serializable]
+public struct PlayerTextureInfo
+{
+	public Texture2D playerTex;
+	public Sprite playerSprite;
 }
 
 public class CharacterSelect : MonoBehaviour 
 {
 	public PlayerInfo[] playerInfos;
 
-	[SerializeField] Texture2D defaultPlayerTex;
-	Color defaultSpriteColor;
+	[SerializeField] PlayerTextureInfo defaultPlayerTexInfo;
 
-	[SerializeField] Texture2D[] playerTextures;
+	[SerializeField] PlayerTextureInfo[] playerTexInfos;
 	List<int>[] teamOpenSpriteIndices = new List<int>[2];
 	
 	List<int> openTeamColorIndices = new List<int>(); // available team colors
@@ -45,8 +48,6 @@ public class CharacterSelect : MonoBehaviour
 		{
 			Debug.LogError("Player Infos setup incorrectly. There should be 8 total.");
 		}
-
-		defaultSpriteColor = playerInfos[0].image.color;
 
 		for(int i = 0; i < 2; i++)
 		{
@@ -111,12 +112,9 @@ public class CharacterSelect : MonoBehaviour
 
 		int teamIndex = playerInfos[playerIndex].teamIndex;
 		int firstSpriteIndex = teamOpenSpriteIndices[teamIndex][0];
-
-		Texture2D spriteTex = playerTextures[firstSpriteIndex];
+		
 		playerInfos[playerIndex].texIndex = firstSpriteIndex;
-		playerInfos[playerIndex].image.sprite = Sprite.Create(spriteTex, 
-		                                                      new Rect(0f, 0f, spriteTex.width, spriteTex.height),
-		                                                      new Vector2(0.5f, 0.5f));
+		playerInfos[playerIndex].image.sprite = playerTexInfos[firstSpriteIndex].playerSprite;
 		playerInfos[playerIndex].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
 		playerInfos[playerIndex].image.transform.GetChild(0).gameObject.SetActive(false);
 
@@ -130,14 +128,10 @@ public class CharacterSelect : MonoBehaviour
 
 		playerInfo.joined = false;
 		teamOpenSpriteIndices[playerInfo.teamIndex].Add(playerInfo.texIndex);
-
-		Texture2D spriteTex = defaultPlayerTex;
-		playerInfo.image.sprite = Sprite.Create(spriteTex, 
-		                                        new Rect(0f, 0f, spriteTex.width, spriteTex.height),
-		                                        new Vector2(0.5f, 0.5f));
+		
+		playerInfo.image.sprite = defaultPlayerTexInfo.playerSprite;
+		playerInfo.image.color = Color.white;
 		playerInfos[playerIndex].image.transform.GetChild(0).gameObject.SetActive(true);
-
-		playerInfo.image.color = defaultSpriteColor;
 	}
 
 	public void ForceAllPlayersLeave()
@@ -168,7 +162,7 @@ public class CharacterSelect : MonoBehaviour
 
 	public Texture2D GetPlayerTex(int texIndex)
 	{
-		return playerTextures[texIndex];
+		return playerTexInfos[texIndex].playerTex;
 	}
 
 	public PlayerInfo[] GetTeamPlayerInfos(int teamIndex)
@@ -240,14 +234,14 @@ public class CharacterSelect : MonoBehaviour
 		{
 			teamOpenSpriteIndices[i].Clear();
 
-			for(int j = 0; j < playerTextures.Length; j++)
+			for(int j = 0; j < playerTexInfos.Length; j++)
 			{
 				bool spriteUnused = true;
 
 				foreach(PlayerInfo playerInfo in playerInfos)
 				{
 					if(playerInfo.teamIndex == i && playerInfo.joined && 
-					   playerInfo.image.sprite.texture == playerTextures[j])
+					   playerInfo.image.sprite.texture == playerTexInfos[j].playerTex)
 					{
 						spriteUnused = false;
 					}
@@ -288,7 +282,7 @@ public class CharacterSelect : MonoBehaviour
 					playerInfos[playerIndex].texIndex = teamOpenSpriteIndices[teamIndex][i];
 					teamOpenSpriteIndices[teamIndex].Remove(teamOpenSpriteIndices[teamIndex][i]);
 
-					playerInfos[playerIndex].UpdateSprite(playerTextures);
+					playerInfos[playerIndex].UpdateSprite(playerTexInfos);
 					break;
 				}
 
@@ -306,7 +300,7 @@ public class CharacterSelect : MonoBehaviour
 					playerInfos[playerIndex].texIndex = teamOpenSpriteIndices[teamIndex][i];
 					teamOpenSpriteIndices[teamIndex].Remove(teamOpenSpriteIndices[teamIndex][i]);
 
-					playerInfos[playerIndex].UpdateSprite(playerTextures);
+					playerInfos[playerIndex].UpdateSprite(playerTexInfos);
 					break;
 				}
 				

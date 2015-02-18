@@ -35,8 +35,6 @@ public class CharacterSelect : MonoBehaviour
 
 	[SerializeField] PlayerTextureInfo[] playerTexInfos;
 	List<int>[] teamOpenSpriteIndices = new List<int>[2];
-	
-	List<int> openTeamColorIndices = new List<int>(); // available team colors
 
 	public int[] teamColorIndices = new int[2]; // colorIndex for each team
 
@@ -65,10 +63,24 @@ public class CharacterSelect : MonoBehaviour
 
 	void Update()
 	{
-		if( Input.GetKeyDown(KeyCode.L) )
+		if( Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.LeftArrow) )
 		{
-			Debug.Log("Count Team 1 sprites: " + teamOpenSpriteIndices[0].Count);
-			Debug.Log("Count Team 2 sprites: " + teamOpenSpriteIndices[1].Count);
+			ChangeTeamColor( 0, -1f );
+		}
+
+		if( Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.RightArrow) )
+		{
+			ChangeTeamColor( 0, 1f );
+		}
+
+		if( !Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.LeftArrow) )
+		{
+			ChangeTeamColor( 1, -1f );
+		}
+		
+		if( !Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.RightArrow) )
+		{
+			ChangeTeamColor( 1, 1f );
 		}
 
 		for(int i = 0; i < 8; i++)
@@ -319,95 +331,37 @@ public class CharacterSelect : MonoBehaviour
 		}
 	}
 
-	void CheckAvailableColors()
-	{
-		openTeamColorIndices.Clear();
-		
-		for(int i = 0; i < GameManager.instance.colorOptions.Length; i++)
-		{ 
-			bool colorUsed = false;
-			for(int j = 0; j < teamColorIndices.Length; j++)
-			{
-				if(teamColorIndices[j] == i)
-				{
-					colorUsed = true;
-				}
-			}
-
-			if(!colorUsed)
-			{
-				openTeamColorIndices.Add(i);
-			}
-		}
-	}
-
 	void ChangeTeamColor(int teamIndex, float bumperInput)
 	{
-		CheckAvailableColors();
-
-		openTeamColorIndices.Sort();
-
 		int i = teamColorIndices[teamIndex];
+		int otherTeamColorIndex = teamColorIndices[teamIndex == 0 ? 1 : 0];
 		while(true)
 		{
-			if(i >= openTeamColorIndices.Count)
+			i += bumperInput > 0f ? 1 : -1;
+
+			if( i >= GameManager.instance.colorOptions.Length)
 			{
 				i = 0;
 			}
-			else if(i < 0)
+
+			if( i < 0 )
 			{
-				i = openTeamColorIndices.Count - 1;
+				i = GameManager.instance.colorOptions.Length - 1;
 			}
 
-			if(bumperInput > 0f)
+			if( i != otherTeamColorIndex )
 			{
-				if(openTeamColorIndices[i] != teamColorIndices[teamIndex])
-				{
-					openTeamColorIndices.Add(teamColorIndices[teamIndex]);
-					teamColorIndices[teamIndex] = openTeamColorIndices[i];
-					openTeamColorIndices.Remove(openTeamColorIndices[i]);
-				
-					for(int j = 4 * teamIndex; j < 4 * teamIndex + 4; j++)
-					{
-						if(playerInfos[j].joined)
-						{
-							playerInfos[j].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
-						}
-					}
+				teamColorIndices[teamIndex] = i;
 
-					break;
-				}
-				
-				i++;
-				if(i >= openTeamColorIndices.Count)
+				for(int j = 0; j < playerInfos.Length; j++)
 				{
-					i = 0;
-				}
-			}
-			else
-			{
-				if(openTeamColorIndices[i] != teamColorIndices[teamIndex])
-				{
-					openTeamColorIndices.Add(teamColorIndices[teamIndex]);
-					teamColorIndices[teamIndex] = openTeamColorIndices[i];
-					openTeamColorIndices.Remove(openTeamColorIndices[i]);
-					
-					for(int j = 4 * teamIndex; j < 4 * teamIndex + 4; j++)
+					if(playerInfos[j].teamIndex == teamIndex && playerInfos[j].joined)
 					{
-						if(playerInfos[j].joined)
-						{
-							playerInfos[j].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
-						}
+						playerInfos[j].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
 					}
+				}
 
-					break;
-				}
-				
-				i--;
-				if(i < 0)
-				{
-					i = openTeamColorIndices.Count - 1;
-				}
+				return;
 			}
 		}
 	}

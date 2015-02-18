@@ -65,6 +65,12 @@ public class CharacterSelect : MonoBehaviour
 
 	void Update()
 	{
+		if( Input.GetKeyDown(KeyCode.L) )
+		{
+			Debug.Log("Count Team 1 sprites: " + teamOpenSpriteIndices[0].Count);
+			Debug.Log("Count Team 2 sprites: " + teamOpenSpriteIndices[1].Count);
+		}
+
 		for(int i = 0; i < 8; i++)
 		{
 			if(playerInfos[i].inputTimer > inputTime)
@@ -241,7 +247,7 @@ public class CharacterSelect : MonoBehaviour
 				foreach(PlayerInfo playerInfo in playerInfos)
 				{
 					if(playerInfo.teamIndex == i && playerInfo.joined && 
-					   playerInfo.image.sprite.texture == playerTexInfos[j].playerTex)
+					   playerInfo.image.sprite == playerTexInfos[j].playerSprite)
 					{
 						spriteUnused = false;
 					}

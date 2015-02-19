@@ -81,13 +81,16 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		if(gameState == GameState.CharacterSelect)
 		{
-			for(int i = 0; i < 8; i++)
+			if( modeTime > 3f )
 			{
-				if(characterSelect.playerInfos[i].joined && characterSelect.IsReadyToPlay() &&
-				   characterSelect.playerInfos[i].inputTimer > characterSelect.inputTime &&
-				   Input.GetButtonDown("Start" + WadeUtils.platformName))
+				for(int i = 0; i < 8; i++)
 				{
-					StartGame();
+					if(characterSelect.playerInfos[i].joined && characterSelect.IsReadyToPlay() &&
+					   characterSelect.playerInfos[i].inputTimer > characterSelect.inputTime &&
+					   Input.GetButtonDown("Start" + WadeUtils.platformName))
+					{
+						StartGame();
+					}
 				}
 			}
 		}

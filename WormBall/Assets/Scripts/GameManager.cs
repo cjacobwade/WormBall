@@ -249,7 +249,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 		Vector3 spawnPos = transform.position;
 		Quaternion spawnRot = Quaternion.identity;
 
-		int team1Count = playerInfos.Count( r => r.playerIndex < 4) + 1; // starts at the number of players on the first team
+		int team1Count = playerInfos.Count( r => r.playerIndex < 5) + 1; // starts at the number of players on the first team
 		int team2Count = 0;
 		for(int i = 0; i < playerInfos.Length; i++)
 		{

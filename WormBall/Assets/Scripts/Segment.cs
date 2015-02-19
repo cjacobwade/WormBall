@@ -3,6 +3,7 @@ using System.Collections;
 
 public class Segment : MonoBehaviour 
 {
+	public Worm worm;
 	SetupBounds sb;
 	Collider2D col;
 

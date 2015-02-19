@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Worm : MonoBehaviour 
 {
@@ -85,6 +86,21 @@ public class Worm : MonoBehaviour
 	int uvIndex = 0;
 	Vector2 currentUVY = Vector2.zero;
 
+	// VFX
+	[SerializeField] float clashTime = 0.2f;
+
+	[HideInInspector]
+	public float clashTimer = Mathf.Infinity;
+
+	[SerializeField] float colorChangeSpeed = 5f;
+	[SerializeField] float initCarryHighlightScale;
+
+	[SerializeField] GameObject moveHighlightObj = null;
+	[SerializeField] GameObject carryHighlightObj = null;
+
+	SpriteRenderer moveHighlightSprite = null;
+	SpriteRenderer carryHighlightSprite = null;
+
 	// Use this for initialization
 	void Start () 
 	{
@@ -101,6 +117,19 @@ public class Worm : MonoBehaviour
 
 		SetupBody(segmentNum);
 		GetComponent<Renderer>().material.SetFloat("_OverlayAlpha", 0.0f);
+
+		 
+		moveHighlightSprite = WadeUtils.Instantiate( moveHighlightObj ).GetComponent<SpriteRenderer>();
+		moveHighlightSprite.color = new Color(0f, 0f, 0f, 0f);
+		moveHighlightSprite.transform.parent = transform;
+		moveHighlightSprite.transform.localPosition = Vector3.zero;
+
+		carryHighlightSprite = WadeUtils.Instantiate( carryHighlightObj ).GetComponent<SpriteRenderer>();
+		carryHighlightSprite.color = new Color(1f, 0f, 0f, 0f);
+		carryHighlightSprite.transform.parent = segments[5];
+		carryHighlightSprite.transform.localPosition = Vector3.zero;
+
+		initCarryHighlightScale = carryHighlightSprite.transform.localScale.x;
 	}
 
 	public void SetControls(string schemeName)
@@ -214,6 +243,7 @@ public class Worm : MonoBehaviour
 		segment.layer = LayerMask.NameToLayer("Segment");
 		segment.transform.localScale = Vector3.one * lastSeg.localScale.x;
 
+		segment.GetComponent<Segment>().worm = this;
 		segment.GetComponent<SpringJoint2D>().connectedBody = lastSeg.GetComponent<Rigidbody2D>();
 
 		Tail tail = segment.AddComponent<Tail>();
@@ -690,7 +720,19 @@ public class Worm : MonoBehaviour
 			GetComponent<Renderer>().material.SetFloat("_OverlayAlpha", throbColorAmount + Mathf.Sin(carryTimer * throbSpeed) * throbColorAmount);
 			ChangeSegmentSize(segments.Length - 1, carryScale.x + throbScaleAmount + Mathf.Sin(carryTimer * throbSpeed) * throbScaleAmount);
 			carryTimer += Time.deltaTime;
+
+			carryHighlightSprite.color = Color.Lerp( new Color( 1f, 0f, 0f, 0f), 
+			                                         Color.red, 
+			                                         Mathf.Sin( carryTimer * throbSpeed ) );
+
+			carryHighlightSprite.transform.localScale = Vector3.one * initCarryHighlightScale * (Mathf.Sin( carryTimer * throbSpeed ) * 0.2f + 1.2f);
 		}
+		else
+		{
+			carryHighlightSprite.color = new Color( 0f, 0f, 0f, 0f );
+		}
+
+		UpdateVFXTimers();
 	}
 
 	void FixedUpdate()
@@ -836,6 +878,17 @@ public class Worm : MonoBehaviour
 		if(Input.GetButton("Propel_P" + playerNum + WadeUtils.platformName))
 		{
 			moveTimer = moveTime;
+//
+//			int teamNum = playerNum < 5 ? 0 : 1;
+//			moveHighlightSprite.color = Color.Lerp( moveHighlightSprite.color, 
+//			                                        GameManager.instance.colorOptions[teamNum], 
+//			                                        Time.deltaTime * colorChangeSpeed );
+//		}
+//		else
+//		{
+//			moveHighlightSprite.color = Color.Lerp( moveHighlightSprite.color, 
+//			                                        new Color( 0f, 0f, 0f, 0f), 
+//			                                        Time.deltaTime * colorChangeSpeed );
 		}
 
 		// Alternating speedboost logic
@@ -929,6 +982,11 @@ public class Worm : MonoBehaviour
 		}
 	}
 
+	void UpdateVFXTimers()
+	{
+		clashTimer += Time.deltaTime;
+	}
+
 	void OnGUI()
 	{
 		for(int i = 0; debug && i < vertices.Length; i++)
@@ -972,6 +1030,32 @@ public class Worm : MonoBehaviour
 				{
 					tail.worm.Puke(true);
 				}
+			}
+		}
+	}
+
+	void OnCollisionEnter2D( Collision2D col )
+	{
+		if( clashTimer > clashTime )
+		{
+			Worm worm = col.collider.GetComponent<Worm>();
+			if( worm && col.collider is PolygonCollider2D)
+			{
+				Vector3 averageHitPos = new Vector3( col.contacts.Average( r => r.point.x),
+				                                     col.contacts.Average( r => r.point.y), 0f);
+
+				GameObject clashEffectObj = EffectsManager.instance.PlayEffect( EffectType.Clash, 
+				                                                                averageHitPos, 
+				                                                                transform.rotation, 
+				                                                                2f );
+				clashEffectObj.transform.parent = transform;
+
+				AudioSource clashAudio = SoundManager.instance.Play2DSong("Clash", 1f);
+				clashAudio.pitch = Random.Range( 0.9f, 1.1f );
+				clashAudio.volume = Random.Range( 0.9f, 1f );
+
+				worm.clashTimer = 0f;
+				clashTimer = 0f;
 			}
 		}
 	}

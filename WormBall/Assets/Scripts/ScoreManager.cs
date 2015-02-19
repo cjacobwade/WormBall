@@ -15,16 +15,20 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 	[SerializeField] float totalGameTime = 30.0f;
 	float gameTime = 0.0f;
 
-	public DrawCircle drawCircle;
+	public DrawCircle drawCircle = null;
 	[SerializeField] float MaxCircleSize = 11.5f;
 	[SerializeField] float circlePulseSpeed = 0.7f;
 	[SerializeField] float circleReturnSpeed = 2f;
+	Color initCircleColor;
+
+	[SerializeField] Image ittyBittyLogo;
 
 	bool suddenDeath = false;
 
 	void Awake()
 	{
 		gameTime = totalGameTime;
+		initCircleColor = drawCircle.renderer.material.GetColor( "_Tint" );
 	}
 
 	void Update()
@@ -89,9 +93,16 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 		drawCircle.fillAmount = gameTime/totalGameTime;
 	}
 
+	public void ResetTimerColor( )
+	{
+		drawCircle.renderer.material.SetColor( "_Tint", initCircleColor );
+		ittyBittyLogo.color = initCircleColor;
+	}
+
 	public void SetTimerColor( Color color )
 	{
 		drawCircle.renderer.material.SetColor( "_Tint", color );
+		ittyBittyLogo.color = color;
 	}
 
 	public void AddTime(int playerNum)

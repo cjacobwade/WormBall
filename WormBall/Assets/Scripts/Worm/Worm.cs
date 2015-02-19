@@ -92,8 +92,8 @@ public class Worm : MonoBehaviour
 	[HideInInspector]
 	public float clashTimer = Mathf.Infinity;
 
-	[SerializeField] float colorChangeSpeed = 5f;
-	[SerializeField] float initCarryHighlightScale;
+	//[SerializeField] float colorChangeSpeed = 5f;
+	float initCarryHighlightScale = 1f;
 
 	[SerializeField] GameObject moveHighlightObj = null;
 	[SerializeField] GameObject carryHighlightObj = null;
@@ -118,7 +118,6 @@ public class Worm : MonoBehaviour
 		SetupBody(segmentNum);
 		GetComponent<Renderer>().material.SetFloat("_OverlayAlpha", 0.0f);
 
-		 
 		moveHighlightSprite = WadeUtils.Instantiate( moveHighlightObj ).GetComponent<SpriteRenderer>();
 		moveHighlightSprite.color = new Color(0f, 0f, 0f, 0f);
 		moveHighlightSprite.transform.parent = transform;

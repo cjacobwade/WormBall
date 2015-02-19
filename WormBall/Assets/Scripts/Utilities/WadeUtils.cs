@@ -50,6 +50,32 @@ public static class WadeUtils
 	{
 		from = Mathf.Lerp (from, to, t);
 	}
+
+	public static void WrapAround(ref int value, int min, int max)
+	{
+		if( value > max)
+		{
+			value = min;
+		}
+		
+		if( value < min )
+		{
+			value = max;
+		}
+	}
+
+	public static void WrapAround(ref float value, float min, float max)
+	{
+		if( value > max)
+		{
+			value = min;
+		}
+
+		if( value < min )
+		{
+			value = max;
+		}
+	}
 	
 	///////////////////////
 	////	VECTORS	 /////

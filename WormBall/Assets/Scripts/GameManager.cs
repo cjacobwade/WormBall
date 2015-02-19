@@ -218,7 +218,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		DestroyAllBalls();
 
-		if(characterSelect.GetPlayerInfos().Length > 5)
+		if(characterSelect.GetPlayerInfos().Length > 4)
 		{
 			WadeUtils.Instantiate(ballPrefab, Vector3.zero + Vector3.up * multiBallSpawnOffset, Quaternion.identity);
 			WadeUtils.Instantiate(ballPrefab, Vector3.zero - Vector3.up * multiBallSpawnOffset, Quaternion.identity);
@@ -240,33 +240,54 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		int team = 0;
 		int playerNum = 0;
-		int team1Count = 0;
+
+		bool lookUp = false;
+		Color spawnColor = Color.white;
+
+		Texture2D playerTex = null;
+
+		Vector3 spawnPos = transform.position;
+		Quaternion spawnRot = Quaternion.identity;
+
+		int team1Count = 5; // this starts at 5 and decrements to spawn players from left to right
 		int team2Count = 0;
 		for(int i = 0; i < playerInfos.Length; i++)
 		{
 			playerNum = playerInfos[i].playerIndex;
 			team = playerInfos[i].teamIndex;
 
-			if(team == 0)
-				team1Count++;
+			spawnPos = transform.position;
+			playerTex = characterSelect.GetPlayerTex(playerInfos[i].texIndex);	
+
+			if( team == 0 )
+			{
+				team1Count--;
+				lookUp = true;
+				spawnColor = team1Color;
+
+				spawnPos += -Vector3.right * 4f * team1Count;
+				spawnPos += Vector3.up * 3f;
+
+				spawnRot = Quaternion.identity;
+			}
 			else
+			{
 				team2Count++;
+				lookUp = false;
+				spawnColor = team2Color;
 
-			bool lookUp = (team == 0);
-			Quaternion spawnRot = team == 0 ? Quaternion.identity : Quaternion.Euler(0f, 0f, 180f);
+				spawnPos += Vector3.right * 4f * team2Count;
+				spawnPos += -Vector3.up * 3f;
 
-			Vector3 spawnPos = transform.position;
-			spawnPos += (team == 0) ? -Vector3.right * 4f * team1Count : Vector3.right * 4f * (team2Count);
-			spawnPos += (team == 0) ? Vector3.up * 3f : -Vector3.up * 3f;
-			
-			Color spawnColor = (team == 0) ? team1Color : team2Color;
-			Texture2D playerTex = characterSelect.GetPlayerTex(playerInfos[i].texIndex);
-		
+				spawnRot = Quaternion.Euler( 0f, 0f, 180f );
+			}
+				
 			GameObject wormObj = WormManager.instance.CreateWorm(spawnPos, 
 			                                                     lookUp, 
 			                                                     playerNum, 
 			                                                     spawnColor, 
 			                                                     playerTex).gameObject;
+
 			wormObj.transform.rotation = spawnRot;
 			wormObj.transform.parent.name = "P" + playerNum;
 			wormObj.name = "Worm";

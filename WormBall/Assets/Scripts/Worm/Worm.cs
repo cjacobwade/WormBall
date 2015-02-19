@@ -955,12 +955,12 @@ public class Worm : MonoBehaviour
 			{
 				if(!carrying)
 				{
-					Vector3 checkPos = transform.position;
+					Vector3 checkPos = Vector3.zero;
 					for(int i = 0; i < segments.Length; i++)
 					{
 						checkPos += segments[i].position;
 					}
-					checkPos *= 1.0f/(segments.Length + 1.0f);
+					checkPos *= 1.0f/(segments.Length);
 
 					GameObject catchCheckObj = WadeUtils.Instantiate(catchCheckPrefab, checkPos, transform.rotation);
 					catchCheckObj.GetComponent<CatchCheck>().worm = this;

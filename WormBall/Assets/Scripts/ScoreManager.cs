@@ -89,6 +89,11 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 		drawCircle.fillAmount = gameTime/totalGameTime;
 	}
 
+	public void SetTimerColor( Color color )
+	{
+		drawCircle.renderer.material.SetColor( "_Tint", color );
+	}
+
 	public void AddTime(int playerNum)
 	{
 		if(GameManager.instance.gameState == GameState.Game)

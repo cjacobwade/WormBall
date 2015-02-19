@@ -35,6 +35,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 	[SerializeField] WormText endWinnerText;
 
 	public Color[] colorOptions;
+	public Color[] complimentaryColors;
 	Color team1Color;
 	Color team2Color;
 
@@ -215,6 +216,30 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		sm.ResetScore();
 		sm.ResetTimer();
+
+		int timerColor = characterSelect.teamColorIndices[0] + characterSelect.teamColorIndices[1];
+
+		if( characterSelect.teamColorIndices[0] > 2 &&
+		    characterSelect.teamColorIndices[1] > 2 )
+		{
+			timerColor += 6;
+		}
+		else if( characterSelect.teamColorIndices[0] > 1 &&
+		         characterSelect.teamColorIndices[1] > 1 )
+		{
+			timerColor += 5;
+		}
+		else if( characterSelect.teamColorIndices[0] > 0 &&
+		         characterSelect.teamColorIndices[1] > 0 )
+		{
+			timerColor += 3;
+		}
+		
+		Debug.Log( "Team index A: " + characterSelect.teamColorIndices[0].ToString() + 
+		           " Team index B: " + characterSelect.teamColorIndices[1].ToString() + 
+		           "\n Bg color index: " + (timerColor - 1).ToString());
+
+		sm.SetTimerColor( complimentaryColors[timerColor - 1] );
 
 		DestroyAllBalls();
 

@@ -219,6 +219,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		int timerColor = characterSelect.teamColorIndices[0] + characterSelect.teamColorIndices[1];
 
+		// This is a hack lol
 		if( characterSelect.teamColorIndices[0] > 2 &&
 		    characterSelect.teamColorIndices[1] > 2 )
 		{
@@ -234,10 +235,6 @@ public class GameManager : SingletonBehaviour<GameManager>
 		{
 			timerColor += 3;
 		}
-		
-		Debug.Log( "Team index A: " + characterSelect.teamColorIndices[0].ToString() + 
-		           " Team index B: " + characterSelect.teamColorIndices[1].ToString() + 
-		           "\n Bg color index: " + (timerColor - 1).ToString());
 
 		sm.SetTimerColor( complimentaryColors[timerColor - 1] );
 

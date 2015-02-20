@@ -93,10 +93,28 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 		drawCircle.fillAmount = gameTime/totalGameTime;
 	}
 
-	public void ResetTimerColor( )
+	public void ResetTimerColor( float time)
 	{
-		drawCircle.renderer.material.SetColor( "_Tint", initCircleColor );
-		ittyBittyLogo.color = initCircleColor;
+		StartCoroutine( ShiftTimerColor( initCircleColor, time ) );
+	}
+
+	IEnumerator ShiftTimerColor( Color targetColor, float time )
+	{
+		Color initColor = drawCircle.renderer.material.GetColor( "_Tint" );
+		float timer = 0f;
+
+		while( timer < time )
+		{
+			Color lerpColor = Color.Lerp( initColor, targetColor, timer/time );
+			drawCircle.renderer.material.SetColor( "_Tint", lerpColor );
+			ittyBittyLogo.color = lerpColor;
+
+			timer += Time.deltaTime;
+			yield return 0;
+		}
+
+		drawCircle.renderer.material.SetColor( "_Tint", targetColor );
+		ittyBittyLogo.color = targetColor;
 	}
 
 	public void SetTimerColor( Color color )

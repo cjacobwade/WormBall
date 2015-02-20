@@ -88,11 +88,11 @@ public class Worm : MonoBehaviour
 
 	// VFX
 	[SerializeField] float clashTime = 0.2f;
+	float clashTimer = Mathf.Infinity;
 
-	[HideInInspector]
-	public float clashTimer = Mathf.Infinity;
+	[SerializeField] float clashParticleStrength = 30f;
+	[SerializeField] float clashMinParticle = 10f;
 
-	//[SerializeField] float colorChangeSpeed = 5f;
 	float initCarryHighlightScale = 1f;
 
 	[SerializeField] GameObject moveHighlightObj = null;
@@ -1040,14 +1040,13 @@ public class Worm : MonoBehaviour
 			Worm worm = col.collider.GetComponent<Worm>();
 			if( worm && col.collider is PolygonCollider2D)
 			{
-				Vector3 averageHitPos = new Vector3( col.contacts.Average( r => r.point.x),
-				                                     col.contacts.Average( r => r.point.y), 0f);
-
 				GameObject clashEffectObj = EffectsManager.instance.PlayEffect( EffectType.Clash, 
-				                                                                averageHitPos, 
+				                                                                transform.position + transform.up, 
 				                                                                transform.rotation, 
 				                                                                2f );
-				clashEffectObj.transform.parent = transform;
+
+				float emissionRate = (rigidbody2D.velocity.sqrMagnitude + worm.rigidbody2D.velocity.sqrMagnitude)/2f;
+				clashEffectObj.GetComponent<ParticleSystem>().emissionRate = clashMinParticle + emissionRate * clashParticleStrength;
 
 				AudioSource clashAudio = SoundManager.instance.Play2DSong("Clash", 1f);
 				clashAudio.pitch = Random.Range( 0.9f, 1.1f );

@@ -355,7 +355,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 		Color winnerColor = (winNum == 1) ? team1Color : team2Color;
 		endWinnerText.SetColor(winnerColor, winnerColor);
 
-		ScoreManager.instance.ResetTimerColor();
+		ScoreManager.instance.ResetTimerColor( 1f );
 
 		if(winNum == 1)
 		{

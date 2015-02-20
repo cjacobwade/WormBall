@@ -10,7 +10,6 @@ public class Rotator : MonoBehaviour
 	void Awake()
 	{
 		initParent = transform.parent;
-		transform.parent = null;
 	}
 
 	void Update()
@@ -23,6 +22,11 @@ public class Rotator : MonoBehaviour
 		{
 			transform.position = initParent.position;
 			transform.rotation *= Quaternion.Euler( rotationVec );
+
+			if( transform.parent )
+			{
+				transform.parent = null;
+			}
 		}
 	}
 }

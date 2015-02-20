@@ -56,6 +56,8 @@ public class CharacterSelect : MonoBehaviour
 			playerInfos[i].joined = false;
 			playerInfos[i].teamIndex = i < 4 ? 0 : 1;
 		}
+
+		ForceAllPlayersLeave();
 	}
 
 	void Update()

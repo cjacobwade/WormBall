@@ -41,14 +41,19 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 	float modeTime = 0.0f;
 
+	[SerializeField] List<Transform> endGameSliders = new List<Transform>();
+	[SerializeField] List<Transform> menuSliders = new List<Transform>();
+
+	[SerializeField] float slideDistance = 45f;
+	[SerializeField] float slideTime = 1f;
+	[SerializeField] AnimationCurve slideCurve = null;
+
 	void Awake () 
 	{
 		gameState = GameState.Menu;
 		prevState = gameState;
 
-		UpdateState();
-
-
+		StartCoroutine( UpdateState() );
 	}
 
 	void Update () 
@@ -60,7 +65,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		if(gameState != prevState)
 		{
-			UpdateState();
+			StartCoroutine( UpdateState() );
 		}
 		else
 		{
@@ -129,14 +134,14 @@ public class GameManager : SingletonBehaviour<GameManager>
 		}
 	}
 
-	public void ResetBall()
+	public GameObject ResetBall()
 	{
 		DestroyAllBalls();
 
-		WadeUtils.Instantiate(ballPrefab);
+		return WadeUtils.Instantiate(ballPrefab);
 	}
 
-	void UpdateState()
+	IEnumerator UpdateState()
 	{
 		modeTime = 0.0f;
 
@@ -153,15 +158,18 @@ public class GameManager : SingletonBehaviour<GameManager>
 			GameCleanup();
 			break;
 		case GameState.EndGame:
-			EndGameCleanup();
+			prevState = gameState;
+			yield return StartCoroutine( EndGameCleanup() );
 			break;
 		}
+
+		prevState = gameState;
 
 		// Setup new state
 		switch(gameState)
 		{
 		case GameState.Menu:
-			MenuSetup();
+			yield return StartCoroutine( MenuSetup() );
 			break;
 		case GameState.CharacterSelect:
 			CharacterSelectSetup();
@@ -173,17 +181,25 @@ public class GameManager : SingletonBehaviour<GameManager>
 			EndGameSetup();
 			break;
 		}
-
-		prevState = gameState;
 	}
 
-	void MenuSetup()
+	IEnumerator MenuSetup()
 	{
 		menuObj.SetActive(true);
 		ScoreManager.instance.drawCircle.enabled = true;
 		// Fade in menu music
+		
+		GameObject ball = ResetBall();
+		menuSliders.Add( ball.transform );
 
-		ResetBall();
+		foreach( Transform t in menuSliders )
+		{
+			t.SetPositionX( -slideDistance );
+		}
+
+		yield return StartCoroutine( SlidePieces( menuSliders.ToArray(), slideDistance, slideTime ) );
+
+		menuSliders.Remove( ball.transform );
 	}
 
 	void MenuCleanup()
@@ -196,6 +212,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 	{
 		characterSelect.ForceAllPlayersLeave();
 		characterSelect.gameObject.SetActive(true);
+
 		DestroyAllBalls();
 		// Fade in pre-game music
 	}
@@ -368,13 +385,93 @@ public class GameManager : SingletonBehaviour<GameManager>
 		// Fade in end music
 	}
 
-	void EndGameCleanup()
+	IEnumerator EndGameCleanup()
 	{
-		gameObj.SetActive(false);
-		endGameObj.SetActive(false);
-		WormManager.instance.DestroyAllWorms();
 		ScoreManager.instance.ResetTimer();
 
-		// Fade out end music
+		foreach( GameObject worm in WormManager.instance.worms )
+		{
+			if(worm)
+			{
+				endGameSliders.Add( worm.transform );
+			}
+		}
+
+		foreach( Ball ball in GameObject.FindObjectsOfType<Ball>() )
+		{
+			endGameSliders.Add( ball.transform );
+		}
+		
+		Vector3[] initPos = new Vector3[endGameSliders.Count];
+		for( int i = 0; i < initPos.Length; i++ )
+		{
+			// Some things in this list have rectTransforms and some don't
+			RectTransform rt = endGameSliders[i].GetComponent<RectTransform>();
+			if( rt )
+			{
+				initPos[i] = rt.anchoredPosition;
+			}
+			else
+			{
+				initPos[i] = endGameSliders[i].position;
+			}
+		}
+
+		yield return StartCoroutine( SlidePieces( endGameSliders.ToArray(), slideDistance, slideTime ) );
+
+		gameObj.SetActive(false);
+		endGameObj.SetActive(false);
+
+		for ( int i = 0; i < endGameSliders.Count; i++ )
+		{
+			if( endGameSliders[i].GetComponentInChildren<Worm>() ||
+			   endGameSliders[i].GetComponent<Ball>() )
+			{
+				endGameSliders.Remove( endGameSliders[i] );
+				i--;
+			}
+			else
+			{
+				// Some things in this list have rectTransforms and some don't
+				RectTransform rt = endGameSliders[i].GetComponent<RectTransform>();
+				if( rt )
+				{
+					rt.anchoredPosition = initPos[i];
+				}
+				else
+				{
+					endGameSliders[i].position = initPos[i];
+				}
+			}
+		}
+
+		WormManager.instance.DestroyAllWorms();
+	}
+
+	IEnumerator SlidePieces( Transform[] sliders, float slideDistance, float slideTime )
+	{
+		float slideTimer = 0f;
+
+		Vector3[] sliderInits = sliders.Select( t => t.position ).ToArray();
+		Vector3[] sliderTargets = sliders.Select( t => t.position + Vector3.right * slideDistance ).ToArray();
+
+		while( slideTimer < slideTime )
+		{
+			for( int i = 0; i < sliders.Length; i++ )
+			{
+				// need to lerp without a clamp here
+				sliders[i].position = sliderInits[i] + (sliderTargets[i] - sliderInits[i]) * slideCurve.Evaluate( slideTimer/slideTime );
+				sliders[i].SetPositionY(sliderInits[i].y);
+				sliders[i].SetPositionZ(sliderInits[i].z);
+			}
+
+			slideTimer += Time.deltaTime;
+			yield return 0;
+		}
+
+		for( int i = 0; i < sliders.Length; i++ )
+		{
+			sliders[i].position = sliderTargets[i];
+		}
 	}
 }

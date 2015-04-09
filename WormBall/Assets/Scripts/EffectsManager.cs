@@ -47,6 +47,16 @@ public class EffectsManager : SingletonBehaviour<EffectsManager>
 		return effectObj;
 	}
 
+	public void DestroyAllEffects()
+	{
+		StopAllCoroutines();
+
+		foreach( ParticleSystem ps in GameObject.FindObjectsOfType<ParticleSystem>() )
+		{
+			Destroy( ps );
+		}
+	}
+
 	IEnumerator WaitAndRecycle( GameObject go, float waitTime )
 	{
 		yield return new WaitForSeconds( waitTime );

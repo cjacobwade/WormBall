@@ -688,8 +688,6 @@ public class Worm : MonoBehaviour
 //			Puke (false);
 //		}
 
-		int inputPNum = WadeUtils.GetOrderedPlayerNum( playerNum - 1 ) + 1;
-
 		inputVec = new Vector3(Input.GetAxis("Horizontal_P" + playerNum), 0f, 0f);
 
 //		if(segmentNum < maxSegments && Input.GetKeyDown(KeyCode.Equals))

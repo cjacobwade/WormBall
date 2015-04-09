@@ -220,7 +220,10 @@ public class GameManager : SingletonBehaviour<GameManager>
 		menuObj.SetActive(true);
 		ScoreManager.instance.drawCircle.enabled = true;
 		// Fade in menu music
-		
+
+		WormManager.instance.DestroyAllWorms();
+		EffectsManager.instance.DestroyAllEffects();
+
 		GameObject ball = ResetBall();
 		menuSliders.Add( ball.transform );
 
@@ -332,10 +335,6 @@ public class GameManager : SingletonBehaviour<GameManager>
 				// control character select
 				// display character select
 				// spawn players
-
-
-			// Get load number to spawn players in order
-			int loadNum = WadeUtils.GetOrderedPlayerNum(i);
 
 			playerNum = playerInfos[i].playerIndex;
 			team = playerInfos[i].teamIndex;

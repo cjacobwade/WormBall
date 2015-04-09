@@ -12,7 +12,7 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 	float team1Time = 0.0f;
 	float team2Time = 0.0f;
 	
-	[SerializeField] float totalGameTime = 30.0f;
+	public float totalGameTime = 45f;
 	float gameTime = 0.0f;
 
 	public DrawCircle drawCircle = null;
@@ -28,7 +28,7 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 	void Awake()
 	{
 		gameTime = totalGameTime;
-		initCircleColor = drawCircle.renderer.material.GetColor( "_Tint" );
+		initCircleColor = drawCircle.GetComponent<Renderer>().material.GetColor( "_Tint" );
 	}
 
 	void Update()
@@ -100,26 +100,26 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 
 	IEnumerator ShiftTimerColor( Color targetColor, float time )
 	{
-		Color initColor = drawCircle.renderer.material.GetColor( "_Tint" );
+		Color initColor = drawCircle.GetComponent<Renderer>().material.GetColor( "_Tint" );
 		float timer = 0f;
 
 		while( timer < time )
 		{
 			Color lerpColor = Color.Lerp( initColor, targetColor, timer/time );
-			drawCircle.renderer.material.SetColor( "_Tint", lerpColor );
+			drawCircle.GetComponent<Renderer>().material.SetColor( "_Tint", lerpColor );
 			ittyBittyLogo.color = lerpColor;
 
 			timer += Time.deltaTime;
 			yield return 0;
 		}
 
-		drawCircle.renderer.material.SetColor( "_Tint", targetColor );
+		drawCircle.GetComponent<Renderer>().material.SetColor( "_Tint", targetColor );
 		ittyBittyLogo.color = targetColor;
 	}
 
 	public void SetTimerColor( Color color )
 	{
-		drawCircle.renderer.material.SetColor( "_Tint", color );
+		drawCircle.GetComponent<Renderer>().material.SetColor( "_Tint", color );
 		ittyBittyLogo.color = color;
 	}
 

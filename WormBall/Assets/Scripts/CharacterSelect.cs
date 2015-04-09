@@ -82,59 +82,71 @@ public class CharacterSelect : MonoBehaviour
 			ChangeTeamColor( 1, 1f );
 		}
 
+		// 1 -> 1
+		// 2 -> 5
+		// 3 -> 2
+		// 4 -> 6
+		// 5 -> 3
+		// 6 -> 7
+		// 7 -> 4
+		// 8 -> 8
+		
 		for(int i = 0; i < 8; i++)
 		{
-			if(playerInfos[i].inputTimer > inputTime)
+			int evenTeamNum = WadeUtils.GetOrderedPlayerNum( i );
+
+			if(playerInfos[evenTeamNum].inputTimer > inputTime)
 			{
 				// Join Game
-				if(!playerInfos[i].joined && Input.GetButtonDown("Propel_P" + (i + 1) + WadeUtils.platformName))
+				if(!playerInfos[evenTeamNum].joined && Input.GetButtonDown("Propel_P" + (i + 1) + WadeUtils.platformName))
 				{
-					PlayerJoinGame(i);
-					playerInfos[i].inputTimer = 0f;
+					PlayerJoinGame(evenTeamNum, i);
+					playerInfos[evenTeamNum].inputTimer = 0f;
 				}
 
 				// Leave Game
-				if(playerInfos[i].joined && Input.GetButtonDown("Leave_P" + (i + 1) + WadeUtils.platformName))
+				if(playerInfos[evenTeamNum].joined && Input.GetButtonDown("Leave_P" + (i + 1) + WadeUtils.platformName))
 				{
-					PlayerLeaveGame(i);
-					playerInfos[i].inputTimer = 0f;
+					PlayerLeaveGame(evenTeamNum);
+					playerInfos[evenTeamNum].inputTimer = 0f;
 				}
 
 				// Change Texure
 				float scrollInput = Input.GetAxis("Horizontal_P" + (i + 1));
-				if(playerInfos[i].joined && Mathf.Abs(scrollInput) > WadeUtils.SMALLNUMBER)
+				if(playerInfos[evenTeamNum].joined && Mathf.Abs(scrollInput) > WadeUtils.SMALLNUMBER)
 				{
-					PlayerChangeSprite(i, scrollInput);
-					playerInfos[i].inputTimer = 0f;
+					PlayerChangeSprite(evenTeamNum, scrollInput);
+					playerInfos[evenTeamNum].inputTimer = 0f;
 				}
 
 				// Change Team Color
 				float bumperInput = Input.GetAxis("Bumper_P" + (i + 1) + WadeUtils.platformName);
-				if(playerInfos[i].joined & Mathf.Abs(bumperInput) > WadeUtils.SMALLNUMBER)
+				if(playerInfos[evenTeamNum].joined & Mathf.Abs(bumperInput) > WadeUtils.SMALLNUMBER)
 				{
-					ChangeTeamColor(i < 4 ? 0 : 1, bumperInput);
-					playerInfos[i].inputTimer = 0f;
+					ChangeTeamColor(evenTeamNum < 4 ? 0 : 1, bumperInput);
+					playerInfos[evenTeamNum].inputTimer = 0f;
 				}
 			}
 
-			playerInfos[i].inputTimer += Time.deltaTime;
+			playerInfos[evenTeamNum].inputTimer += Time.deltaTime;
 		}
 	}
 
-	void PlayerJoinGame(int playerIndex)
+	void PlayerJoinGame(int playerNum, int playerIndex)
 	{
-		playerInfos[playerIndex].joined = true;
+		playerInfos[playerNum].joined = true;
+		playerInfos[playerNum].playerIndex = playerIndex + 1;
 
-		int teamIndex = playerInfos[playerIndex].teamIndex;
+		int teamIndex = playerInfos[playerNum].teamIndex;
 
 		int i = 0;
-		int[] availableSpriteIndices = GetAvailableSpriteIndices(playerIndex);
+		int[] availableSpriteIndices = GetAvailableSpriteIndices(playerNum);
 		while(true)
 		{
 			if( availableSpriteIndices.Contains(i) )
 			{
-				playerInfos[playerIndex].texIndex = i;
-				playerInfos[playerIndex].UpdateSprite( playerTexInfos );
+				playerInfos[playerNum].texIndex = i;
+				playerInfos[playerNum].UpdateSprite( playerTexInfos );
 				break;
 			}
 
@@ -142,8 +154,8 @@ public class CharacterSelect : MonoBehaviour
 			WadeUtils.WrapAround(ref i, 0, playerTexInfos.Length - 1);
 		}
 
-		playerInfos[playerIndex].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
-		playerInfos[playerIndex].image.transform.GetChild(0).gameObject.SetActive(false);
+		playerInfos[playerNum].image.color = GameManager.instance.colorOptions[teamColorIndices[teamIndex]];
+		playerInfos[playerNum].image.transform.GetChild(0).gameObject.SetActive(false);
 	}
 
 	void PlayerLeaveGame(int playerIndex)

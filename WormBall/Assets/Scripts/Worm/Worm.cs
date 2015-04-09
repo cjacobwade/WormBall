@@ -35,6 +35,7 @@ public class Worm : MonoBehaviour
 
 	delegate void InputMethod();
 	InputMethod WiggleLogic;
+
 	[SerializeField] float wiggleTime = 0.7f;
 	float wiggleTimer = -1.0f;
 	bool lastHitLeft = false;
@@ -678,26 +679,28 @@ public class Worm : MonoBehaviour
 			Application.LoadLevel(Application.loadedLevel);
 		}
 
-		if(Input.GetKeyDown(KeyCode.C))
-		{
-			Catch();
-		}
-		if(Input.GetKeyDown(KeyCode.P))
-		{
-			Puke (false);
-		}
+//		if(Input.GetKeyDown(KeyCode.C))
+//		{
+//			Catch();
+//		}
+//		if(Input.GetKeyDown(KeyCode.P))
+//		{
+//			Puke (false);
+//		}
+
+		int inputPNum = WadeUtils.GetOrderedPlayerNum( playerNum - 1 ) + 1;
 
 		inputVec = new Vector3(Input.GetAxis("Horizontal_P" + playerNum), 0f, 0f);
 
-		if(segmentNum < maxSegments && Input.GetKeyDown(KeyCode.Equals))
-		{
-			AddSegment();
-		}
-
-		if(segmentNum > minSegments && Input.GetKeyDown(KeyCode.Minus))
-		{
-			RemoveSegment();
-		}
+//		if(segmentNum < maxSegments && Input.GetKeyDown(KeyCode.Equals))
+//		{
+//			AddSegment();
+//		}
+//
+//		if(segmentNum > minSegments && Input.GetKeyDown(KeyCode.Minus))
+//		{
+//			RemoveSegment();
+//		}
 
 		if(wiggleTimer > wiggleTime)
 		{
@@ -873,7 +876,9 @@ public class Worm : MonoBehaviour
 	void SkilledTankWiggleLogic()
 	{
 		transform.rotation *= Quaternion.Euler(0.0f, 0.0f, -rotSpeed * inputVec.x);
-		
+
+		//int adjPlayerNum = WadeUtils.GetOrderedPlayerNum( playerNum - 1 ) + 1;
+
 		if(Input.GetButton("Propel_P" + playerNum + WadeUtils.platformName))
 		{
 			moveTimer = moveTime;
@@ -1045,7 +1050,7 @@ public class Worm : MonoBehaviour
 				                                                                transform.rotation, 
 				                                                                2f );
 
-				float emissionRate = (rigidbody2D.velocity.sqrMagnitude + worm.rigidbody2D.velocity.sqrMagnitude)/2f;
+				float emissionRate = (GetComponent<Rigidbody2D>().velocity.sqrMagnitude + worm.GetComponent<Rigidbody2D>().velocity.sqrMagnitude)/2f;
 				clashEffectObj.GetComponent<ParticleSystem>().emissionRate = clashMinParticle + emissionRate * clashParticleStrength;
 
 				AudioSource clashAudio = SoundManager.instance.Play2DSong("Clash", 1f);

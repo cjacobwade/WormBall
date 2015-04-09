@@ -41,6 +41,39 @@ public static class WadeUtils
 	////	FLOATS	 /////
 	//////////////////////
 
+	public static int GetOrderedPlayerNum( int playerNum )
+	{
+		switch( playerNum )
+		{
+		case 0:
+			playerNum = 0;
+			break;
+		case 1:
+			playerNum = 4;
+			break;
+		case 2:
+			playerNum = 1;
+			break;
+		case 3:
+			playerNum = 5;
+			break;
+		case 4:
+			playerNum = 2;
+			break;
+		case 5:
+			playerNum = 6;
+			break;
+		case 6:
+			playerNum = 3;
+			break;
+		case 7:
+			playerNum = 7;
+			break;
+		}
+		
+		return playerNum;
+	}
+
 	public static void Clamp(ref float value, float min, float max)
 	{
 		value = Mathf.Clamp (value, min, max);

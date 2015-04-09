@@ -26,6 +26,7 @@ public class Rotator : MonoBehaviour
 			if( transform.parent )
 			{
 				transform.parent = null;
+				transform.localScale = Vector3.one * 1.25f;
 			}
 		}
 	}

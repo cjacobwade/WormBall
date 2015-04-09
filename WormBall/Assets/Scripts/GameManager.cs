@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.UI;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public enum GameState
 {
 	Menu				= 0,
@@ -48,12 +52,40 @@ public class GameManager : SingletonBehaviour<GameManager>
 	[SerializeField] float slideTime = 1f;
 	[SerializeField] AnimationCurve slideCurve = null;
 
+	iniParser parser = new iniParser();
+
 	void Awake () 
 	{
+		parser = new iniParser();
+		
+		if( !parser.DoesExist("WormballSettings") )
+		{
+			parser.Set("MatchLength", ScoreManager.instance.totalGameTime.ToString() );
+			parser.save("WormballSettings");
+		}
+		else
+		{
+			parser.load("WormballSettings");
+
+			float parseVal = 5f;
+			if(float.TryParse(parser.Get("MatchLength"), out parseVal))
+			{
+				ScoreManager.instance.totalGameTime = float.Parse(parser.Get("MatchLength"));
+			}
+			else
+			{
+				ScoreManager.instance.totalGameTime = 45f;
+			}
+		}
+
 		gameState = GameState.Menu;
 		prevState = gameState;
 
 		StartCoroutine( UpdateState() );
+
+#if UNITY_EDITOR
+		AssetDatabase.Refresh();
+#endif
 	}
 
 	void Update () 
@@ -291,10 +323,20 @@ public class GameManager : SingletonBehaviour<GameManager>
 		Vector3 spawnPos = transform.position;
 		Quaternion spawnRot = Quaternion.identity;
 
-		int team1Count = playerInfos.Count( r => r.playerIndex < 5) + 1; // starts at the number of players on the first team
+		int team1Count = playerInfos.Count( r => r.playerIndex < 5 && r.teamIndex == 0) + 1; // starts at the number of players on the first team
 		int team2Count = 0;
 		for(int i = 0; i < playerInfos.Length; i++)
 		{
+			// Uses of player num:
+				// control player
+				// control character select
+				// display character select
+				// spawn players
+
+
+			// Get load number to spawn players in order
+			int loadNum = WadeUtils.GetOrderedPlayerNum(i);
+
 			playerNum = playerInfos[i].playerIndex;
 			team = playerInfos[i].teamIndex;
 

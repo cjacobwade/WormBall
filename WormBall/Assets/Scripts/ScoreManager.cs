@@ -123,11 +123,11 @@ public class ScoreManager : SingletonBehaviour<ScoreManager>
 		ittyBittyLogo.color = color;
 	}
 
-	public void AddTime(int playerNum)
+	public void AddTime( int teamNum )
 	{
 		if(GameManager.instance.gameState == GameState.Game)
 		{
-			if(playerNum <= 4)
+			if( teamNum < 1 )
 			{
 				AddTeam1Time();
 			}

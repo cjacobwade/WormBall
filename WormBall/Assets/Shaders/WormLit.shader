@@ -1,9 +1,13 @@
-﻿Shader "Custom/AlwaysVisibleUnlitWorldSpace" 
+﻿Shader "Custom/WormLit" 
 {
 	Properties 
 	{
+		_Color ("Color", Color) = (1,1,1,1)
+		_MainTex ("Albedo (RGB)", 2D) = "white" {}
+		_Glossiness ("Smoothness", Range(0,1)) = 0.5
+		_Metallic ("Metallic", Range(0,1)) = 0.0
+		
 		_MainTint ("Color Tint(RGB)", Color) = (1, 1, 1, 1)
-		_MainTex ("Base Texture(RGBA)", 2D) = "white"{}
 		
 		_OverlayTint ("Overlay Tint(RGB)", Color) = (1, 1, 1, 1)
 		_OverlayTex ("Overlay Texture(RGBA)", 2D) = "white"{}
@@ -14,16 +18,21 @@
 	}
 	SubShader 
 	{
-		Tags { "RenderType" = "Transparent" "Queue"="Transparent"}
+		//Tags { "RenderType" = "Transparent" "Queue"="Transparent"}
+		//LOD 200
+		
+		//Ztest Less
+		//Zwrite On
+		//Blend SrcAlpha OneMinusSrcAlpha
+		
+		Tags { "RenderType"="Opaque" }
 		LOD 200
 		
-		Ztest Less
-		Zwrite On
-		Blend SrcAlpha OneMinusSrcAlpha
-		
 		CGPROGRAM
-		#pragma surface surf Standard
+		#pragma surface surf Standard fullforwardshadows
 		#include "UnityCG.cginc"
+		
+		#pragma target 3.0
 		
 		fixed4 LightingUnlit(SurfaceOutput s, fixed3 lightDir, fixed atten)
 		{
@@ -39,6 +48,9 @@
 		float4 _OverlayTint;
 		float _OverlayAlpha;
 		float4 _TexScale;
+		
+		float _Metallic;
+		float _Glossiness;
 
 		struct Input 
 		{
@@ -59,6 +71,9 @@
 		
 			o.Albedo = lerp(t.rgb * _MainTint.rgb, ot.rgb * _OverlayTint.rgb, ot.a);
 			o.Alpha = t.a * _MainTint.a;
+			
+			o.Smoothness = _Glossiness;
+			o.Metallic = _Metallic;
 		}
 		ENDCG
 	} 

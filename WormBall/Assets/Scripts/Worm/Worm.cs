@@ -6,6 +6,7 @@ using System.Linq;
 public class Worm : MonoBehaviour 
 {
 	public int playerNum = 0;
+	public int teamNum = 0;
 	public bool carrying = false;
 
 	[SerializeField] float defaultMoveSpeed = 12.0f;
@@ -746,7 +747,7 @@ public class Worm : MonoBehaviour
 
 		if(carrying)
 		{
-			ScoreManager.instance.AddTime(playerNum);
+			ScoreManager.instance.AddTime(teamNum);
 		}
 
 		canMoveTimer += Time.deltaTime;

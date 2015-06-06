@@ -56,14 +56,17 @@ public class WormManager : SingletonBehaviour<WormManager>
 		}
 	}
 
-	public Worm CreateWorm(Vector3 pos, bool lookUp, int playerNum, Color color, Texture2D tex)
+	public Worm CreateWorm(Vector3 pos, bool lookUp, int playerNum, int teamNum, Color color, Texture2D tex)
 	{
 		Quaternion spawnRot = lookUp ? Quaternion.identity : Quaternion.Euler(0.0f, 0.0f, 180.0f);
 		GameObject wormObj = WadeUtils.Instantiate(wormPrefab, pos, spawnRot);
 		worms.Add(wormObj);
 
 		Worm worm = wormObj.GetComponentInChildren<Worm>();
+
 		worm.playerNum = playerNum;
+		worm.teamNum = teamNum;
+
 		worm.GetComponent<Renderer>().material.SetTexture("_MainTex", tex);
 		worm.GetComponent<Renderer>().material.SetColor("_MainTint", color);
 

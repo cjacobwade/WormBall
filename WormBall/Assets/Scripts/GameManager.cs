@@ -33,7 +33,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 	[SerializeField] float multiBallSpawnOffset = 1f;
 
 	[SerializeField] GameObject menuObj;
-	[SerializeField] CharacterSelect characterSelect;
+	public CharacterSelect characterSelect;
 	[SerializeField] GameObject gameObj;
 	[SerializeField] GameObject endGameObj;
 	[SerializeField] WormText endWinnerText;
@@ -106,6 +106,11 @@ public class GameManager : SingletonBehaviour<GameManager>
 
 		if(gameState == GameState.Menu)
 		{
+			if( Input.GetKeyDown(KeyCode.Escape) )
+			{
+				Application.Quit();
+			}
+	
 			if(Input.anyKeyDown)
 			{
 				ChangeGameState(GameState.CharacterSelect);
@@ -316,7 +321,9 @@ public class GameManager : SingletonBehaviour<GameManager>
 	 	PlayerInfo[] playerInfos = characterSelect.GetPlayerInfos();
 
 		int team = 0;
+
 		int playerNum = 0;
+		int teamNum = 0;
 
 		bool lookUp = false;
 		Color spawnColor = Color.white;
@@ -326,7 +333,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 		Vector3 spawnPos = transform.position;
 		Quaternion spawnRot = Quaternion.identity;
 
-		int team1Count = playerInfos.Count( r => r.playerIndex < 5 && r.teamIndex == 0) + 1; // starts at the number of players on the first team
+		int team1Count = playerInfos.Count( r => r.teamIndex == 0) + 1; // starts at the number of players on the first team
 		int team2Count = 0;
 		for(int i = 0; i < playerInfos.Length; i++)
 		{
@@ -337,6 +344,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 				// spawn players
 
 			playerNum = playerInfos[i].playerIndex;
+			teamNum = playerInfos[i].teamIndex;
 			team = playerInfos[i].teamIndex;
 
 			spawnPos = transform.position;
@@ -368,6 +376,7 @@ public class GameManager : SingletonBehaviour<GameManager>
 			GameObject wormObj = WormManager.instance.CreateWorm(spawnPos, 
 			                                                     lookUp, 
 			                                                     playerNum, 
+			                                                     teamNum,
 			                                                     spawnColor, 
 			                                                     playerTex).gameObject;
 

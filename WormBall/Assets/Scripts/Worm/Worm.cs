@@ -208,7 +208,7 @@ public class Worm : MonoBehaviour
 		segment.transform.SetParent(segmentHolder);
 
 		SpringJoint2D segJoint = segment.GetComponent<SpringJoint2D>();
-		segJoint.collideConnected = false;
+		segJoint.enableCollision = false;
 		segJoint.frequency = 0.0f;
 		segJoint.distance *= circleDist;
 
